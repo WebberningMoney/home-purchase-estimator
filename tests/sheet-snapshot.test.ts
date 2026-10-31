@@ -7,10 +7,15 @@ import type { Scenario } from '../src/core'
 // 沒有這個檔案時會自動略過。
 const path = new URL('./fixtures/sheet-snapshot.local.json', import.meta.url)
 
+const parseDay = (text: string) => {
+  const [y, m, d] = text.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
 describe.skipIf(!existsSync(path))('跟試算表的數字對照', () => {
   const snapshot = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : null
-  const [y, m, d] = (snapshot?.today ?? '2026-01-01').split('-').map(Number)
-  const result = evaluate(snapshot?.scenario as Scenario, new Date(y, m - 1, d))
+  // describe 的內容即使被略過也會執行，所以沒有快照時不能去算
+  const result = snapshot ? evaluate(snapshot.scenario as Scenario, parseDay(snapshot.today)) : (null as never)
   const near = (actual: number, expected: number) => expect(Math.abs(actual - expected)).toBeLessThan(100)
 
   it('現金', () => {
