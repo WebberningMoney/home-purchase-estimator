@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "主視窗可以做的事：存檔、開檔、查匯率",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "dialog:default",
+    "fs:allow-read-text-file",
+    "fs:allow-write-text-file",
+    { "identifier": "fs:scope", "allow": [{ "path": "**" }] },
+    { "identifier": "http:default", "allow": [{ "url": "https://scanner.tradingview.com/*" }] }
+  ]
+}
