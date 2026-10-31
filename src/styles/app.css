@@ -39,6 +39,7 @@ button, input, select { font: inherit; color: inherit; }
   background: var(--card); border-bottom: 1px solid var(--line);
 }
 .brand { font-weight: 700; font-size: 15px; letter-spacing: 0.04em; }
+.brand, .notice { pointer-events: none; } /* 讓文字不擋住拖動視窗 */
 .notice { flex: 1; color: var(--tone-good); font-size: 13px; }
 .toolbar-actions { display: flex; gap: 8px; }
 
