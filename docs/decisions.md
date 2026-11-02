@@ -1,7 +1,7 @@
 # 技術選擇紀錄
 
 ## 為什麼用 Tauri + React
-- 要做成 macOS 桌面程式，之後要能出 Windows 版。Tauri 兩邊都支援，安裝檔小（Electron 動輒上百 MB）。
+- 要做成 macOS 與 Windows 桌面程式。Tauri 兩邊都支援，安裝檔小（Electron 動輒上百 MB）。
 - 畫面用 React，拉桿與圖表的生態成熟；計算與畫面分開，核心邏輯換殼也能用。
 
 ## 資料存放
@@ -22,5 +22,5 @@
 
 ## 名稱
 - 中文「購屋財務評估」，英文 Home Purchase Estimator。既能評估賣舊屋再買新屋（換屋），也能評估第一次買房或加買一間。
-- 專案與 GitHub 倉庫名稱：`home-purchase-estimator-macos`（先做 macOS，之後再做 Windows）。
+- 專案與 GitHub 倉庫名稱：`home-purchase-estimator`，macOS 與 Windows 共用同一個倉庫。
 - 改名前（`home-swap-estimator`）存的檔案仍然可以開啟。

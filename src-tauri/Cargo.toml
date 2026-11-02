@@ -1,5 +1,5 @@
 [package]
-name = "home-purchase-estimator-macos"
+name = "home-purchase-estimator"
 version = "1.0.0"
 description = "購屋財務評估"
 edition = "2021"
