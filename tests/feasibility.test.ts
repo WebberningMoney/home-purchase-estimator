@@ -73,7 +73,7 @@ describe('對照獨立重算（範例資料、2026-10-30）', () => {
 
   it('最多買得起：3,790 萬，上限那天存款撐 36 個月、再貴 20 萬就掉到 32 個月', () => {
     const scenario = createDefaultScenario()
-    expect(findMaxAffordable(scenario, today)).toEqual({ price: 37_900_000, limitedBy: '存款續航' })
+    expect(findMaxAffordable(scenario, today)).toEqual({ price: 37_900_000, limitedBy: '存款續航', savingsGoalPrice: 12_700_000 })
     const runwayAt = (price: number) => {
       const draft = structuredClone(scenario)
       draft.buyer.price = price
@@ -90,6 +90,34 @@ describe('對照獨立重算（範例資料、2026-10-30）', () => {
     near(result.availableCash, 7_800_000)
     near(result.cashAfterReserve, -4_896_250)
     expect(isAffordable(result)).toBe(false)
+  })
+})
+
+describe('每年想存的金額', () => {
+  it('達標上限 1,270 萬：每年還款剛好不超過年預算，再貴 20 萬就超過', () => {
+    const scenario = createDefaultScenario()
+    const at = (price: number) => {
+      const draft = structuredClone(scenario)
+      draft.buyer.price = price
+      return evaluate(draft, today)
+    }
+    near(at(12_700_000).annualPayment, 784_792.08, 0.01)
+    expect(at(12_700_000).annualCheck).toBe('通過')
+    near(at(12_900_000).annualPayment, 792_057.53, 0.01)
+    expect(at(12_900_000).annualCheck).not.toBe('通過')
+  })
+
+  it('想存得越多，達標的房價上限就越低', () => {
+    const modest = createDefaultScenario()
+    const ambitious = createDefaultScenario()
+    ambitious.household.yearlySavings = 600_000
+    expect(findMaxAffordable(ambitious, today).savingsGoalPrice).toBeLessThan(findMaxAffordable(modest, today).savingsGoalPrice)
+  })
+
+  it('達標的房價，一定也「買得起」', () => {
+    const scenario = createDefaultScenario()
+    const { price, savingsGoalPrice } = findMaxAffordable(scenario, today)
+    expect(savingsGoalPrice).toBeLessThanOrEqual(price)
   })
 })
 

@@ -52,7 +52,7 @@ export function HouseholdPanel({ scenario, evaluation, onChange }: Props) {
           label="每天生活費"
         />
       </Row>
-      <Row label="每年想存多少" hint="不算進房貸能力，先留給自己">
+      <Row label="每年想存多少" hint="會先扣掉，剩下才算能拿來還貸款">
         <NumberField
           value={household.yearlySavings}
           onChange={(value) => onChange((d) => void (d.household.yearlySavings = value))}
@@ -62,7 +62,7 @@ export function HouseholdPanel({ scenario, evaluation, onChange }: Props) {
         />
       </Row>
       <p className="hint block">
-        每年能拿來還房貸的上限（年預算）＝年收入 − 生活費 − 想存的錢＝ <b>{fmtMoney(evaluation.annualBudget)} 元</b>
+        每年能拿來還貸款的上限（年預算）＝年收入 − 生活費 − 想存的錢＝ <b>{fmtMoney(evaluation.annualBudget)} 元</b>。每年還款超過它，就達不到存款目標，要動用存款補。
       </p>
 
       <Section title="風險門檻" summary={`預備金 ${household.reserveMonths} 個月，存款撐 ${household.warnMonths / 12}～${household.safeMonths / 12} 年`}>
