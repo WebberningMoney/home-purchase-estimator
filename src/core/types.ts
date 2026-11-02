@@ -43,7 +43,7 @@ export interface Loan {
   remainingPrincipal: number
   /** 已知月繳金時直接填，會蓋過自動計算；null＝自動算 */
   monthlyOverride: number | null
-  /** 賣房後是否一次還清 */
+  /** 賣房後是否一次還清。只對信貸等其他貸款有意義；舊屋房貸賣屋時一定要還清，不看這個值 */
   settleOnSale: boolean
   /** 提前還款違約金率 */
   penaltyRate: number
@@ -128,6 +128,8 @@ export interface LoanResult {
   monthly: number
   /** 還剩幾個月；null＝算不出來，視為一直繳 */
   remainingMonths: number | null
+  /** 賣屋時這筆會一次還清 */
+  settled: boolean
   /** 賣房後一次還清要出的現金（含違約金） */
   payoffCash: number
   penalty: number
@@ -169,6 +171,8 @@ export interface Evaluation {
   capitalGainsTax: number
   loans: LoanResult[]
   payoffTotal: number
+  /** 賣屋後實拿的現金＝賣價 − 賣方費用與稅 − 還清的貸款 */
+  saleNetCash: number
   retainedMonthly: number
   retainedPrincipal: number
   /** 現有貸款的本金合計 */

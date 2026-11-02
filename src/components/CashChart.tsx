@@ -55,7 +55,7 @@ export function CashChart({ scenario, evaluation: e }: Props) {
     }
     scenario.loans.forEach((loan, index) => {
       const remaining = e.loans[index].remainingMonths
-      if (!loan.settleOnSale && remaining !== null && remaining > 0 && remaining < 480) {
+      if (!e.loans[index].settled && remaining !== null && remaining > 0 && remaining < 480) {
         list.push({ month: Math.round(remaining), text: `${loan.name}還完` })
       }
     })

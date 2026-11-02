@@ -14,6 +14,7 @@ interface Props {
 /** 賣舊屋：賣價、手續費，以及房地合一稅需要的資料 */
 export function SellerPanel({ scenario, evaluation, onChange }: Props) {
   const { seller } = scenario
+  const noMortgage = !scenario.loans.some((loan) => loan.kind === 'mortgage' && loan.remainingPrincipal > 0)
   const taxMissing = seller.originalPrice === null || seller.holdingYears === null
   return (
     <Section
@@ -31,9 +32,7 @@ export function SellerPanel({ scenario, evaluation, onChange }: Props) {
         !seller.enabled
           ? '不賣舊屋，下面的數字都不計算'
           : evaluation.salePrice > 0
-          ? `賣價 ${fmtBig(evaluation.salePrice)}，扣掉費用與貸款後約剩 ${fmtBig(
-              evaluation.salePrice - evaluation.sellerFee - evaluation.capitalGainsTax - evaluation.payoffTotal,
-            )}`
+          ? `賣價 ${fmtBig(evaluation.salePrice)}，還清貸款、扣掉費用後實拿 ${fmtBig(evaluation.saleNetCash)}`
           : '還沒有舊屋要賣'
       }
     >
@@ -68,6 +67,36 @@ export function SellerPanel({ scenario, evaluation, onChange }: Props) {
           label="賣方手續費率"
         />
       </Row>
+
+      <dl className="waterfall" aria-label="賣屋後實拿多少現金">
+        <div>
+          <dt>房屋賣價</dt>
+          <dd>{fmtBig(evaluation.salePrice)}</dd>
+        </div>
+        <div>
+          <dt>− 賣方手續費</dt>
+          <dd>{fmtBig(evaluation.sellerFee)}</dd>
+        </div>
+        <div>
+          <dt>− 房地合一稅</dt>
+          <dd>{fmtBig(evaluation.capitalGainsTax)}</dd>
+        </div>
+        <div>
+          <dt>− 土地增值稅與其他費用</dt>
+          <dd>{fmtBig(seller.landValueTax + seller.otherFees)}</dd>
+        </div>
+        <div>
+          <dt>− 還清貸款（含違約金）</dt>
+          <dd>{fmtBig(evaluation.payoffTotal)}</dd>
+        </div>
+        <div className="total">
+          <dt>＝ 賣屋後實拿現金</dt>
+          <dd>{fmtBig(evaluation.saleNetCash)}</dd>
+        </div>
+      </dl>
+      {noMortgage && evaluation.salePrice > 0 && (
+        <p className="hint warn">「現有貸款」裡沒有舊屋房貸，賣屋後的現金可能算多了。請確認舊屋的房貸有填進去。</p>
+      )}
 
       <Section title="稅與其他費用" summary={taxMissing ? '房地合一稅還沒算' : `房地合一稅約 ${fmtBig(evaluation.capitalGainsTax)}`}>
         <Row label="原買價" hint="房地合一稅用；空白＝稅額以 0 計">

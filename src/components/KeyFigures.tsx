@@ -46,7 +46,7 @@ export function KeyFigures({ scenario, evaluation: e }: Props) {
     },
     {
       label: `收入中斷 ${household.interruptMonths} 個月`,
-      value: e.stress.months === null ? '不受影響' : `${e.stress.passed ? '撐得住' : '撐不住'}`,
+      value: e.stress.months === null ? '不受影響' : `${e.stress.passed ? '通過' : '不通過'}`,
       note:
         e.stress.months === null
           ? '就算標記的收入消失，剩下的收入還是夠'

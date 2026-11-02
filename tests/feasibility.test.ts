@@ -3,6 +3,7 @@ import { createDefaultScenario, evaluate, findMaxAffordable, isAffordable } from
 import { toneOf } from '../src/lib/zones'
 
 const today = new Date('2026-10-30')
+const near = (actual: number, expected: number, tolerance = 1) => expect(Math.abs(actual - expected)).toBeLessThan(tolerance)
 
 describe('範例資料的結論', () => {
   it('範例房價買得起，但要靠存款補', () => {
@@ -55,8 +56,6 @@ describe('最多買得起的房價', () => {
 
 // 下面的數字是另外用獨立程式（只依規格、不看本專案程式碼）重算出來的，用來防止公式悄悄跑掉
 describe('對照獨立重算（範例資料、2026-10-30）', () => {
-  const near = (actual: number, expected: number, tolerance = 1) => expect(Math.abs(actual - expected)).toBeLessThan(tolerance)
-
   it('賣屋後的現金與買房後剩餘', () => {
     const result = evaluate(createDefaultScenario(), today)
     near(result.assetsTotal, 12_612_000)
@@ -127,5 +126,29 @@ describe('一致性：同一套標準', () => {
       if (price > 0) expect(at(price), JSON.stringify(c)).toBe(true)
       expect(at(price + 200_000), JSON.stringify(c)).toBe(false)
     }
+  })
+})
+
+describe('賣屋時的貸款', () => {
+  it('舊屋房貸一定還清，就算開關沒開', () => {
+    const scenario = createDefaultScenario()
+    scenario.loans[0].settleOnSale = false
+    const result = evaluate(scenario, today)
+    expect(result.loans[0].settled).toBe(true)
+    near(result.payoffTotal, 7_300_000)
+  })
+
+  it('信貸看使用者選擇：不選就留著繼續繳', () => {
+    const scenario = createDefaultScenario()
+    const result = evaluate(scenario, today)
+    expect(result.loans[1].settled).toBe(false)
+    scenario.loans[1].settleOnSale = true
+    near(evaluate(scenario, today).payoffTotal, 8_300_000)
+  })
+
+  it('賣屋實拿現金＝賣價 − 手續費 − 稅費 − 還清的貸款', () => {
+    const result = evaluate(createDefaultScenario(), today)
+    near(result.saleNetCash, 16_250_000 - 650_000 - 7_300_000)
+    near(result.availableCash, result.usableAssets + result.saleNetCash)
   })
 })

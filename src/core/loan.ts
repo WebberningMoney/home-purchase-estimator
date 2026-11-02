@@ -54,11 +54,12 @@ export function estimatePrincipal(loan: Loan, monthly: number, today: Date): num
   return loan.originalPrincipal * growth - (monthly * (growth - 1)) / i
 }
 
-export function evaluateLoan(loan: Loan, today: Date): LoanResult {
+/** settled＝這筆貸款會在賣屋時一次還清（由呼叫端依貸款類型與是否賣屋決定） */
+export function evaluateLoan(loan: Loan, today: Date, settled: boolean): LoanResult {
   const monthly = loanMonthly(loan)
   const estimated = estimatePrincipal(loan, monthly, today)
   const tolerance = Math.max(10000, loan.remainingPrincipal * 0.02)
-  const penalty = loan.settleOnSale ? loan.remainingPrincipal * loan.penaltyRate : 0
+  const penalty = settled ? loan.remainingPrincipal * loan.penaltyRate : 0
 
   let note = ''
   if (loan.remainingPrincipal > 0 && (loan.originalPrincipal <= 0 || !loan.startDate || loan.termYears <= 0)) {
@@ -71,7 +72,8 @@ export function evaluateLoan(loan: Loan, today: Date): LoanResult {
     id: loan.id,
     monthly,
     remainingMonths: loanRemainingMonths(loan, monthly, today),
-    payoffCash: loan.settleOnSale ? loan.remainingPrincipal + penalty : 0,
+    settled,
+    payoffCash: settled ? loan.remainingPrincipal + penalty : 0,
     penalty,
     estimatedPrincipal: estimated,
     note,

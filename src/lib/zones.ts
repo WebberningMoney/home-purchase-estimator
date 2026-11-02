@@ -6,8 +6,8 @@ export type Tone = 'good' | 'steady' | 'watch' | 'bad'
 
 export const TONE_LABEL: Record<Tone, string> = {
   good: '買得起',
-  steady: '靠存款撐得住',
-  watch: '存款撐得有點勉強',
+  steady: '買得起（要動用存款）',
+  watch: '勉強（存款偏緊）',
   bad: '買不起',
 }
 

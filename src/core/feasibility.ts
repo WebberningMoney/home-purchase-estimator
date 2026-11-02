@@ -13,13 +13,13 @@ export function evaluate(scenario: Scenario, today: Date = new Date()): Evaluati
   const usableAssets = assets.reduce((sum, a) => sum + usableValue(a, rates), 0)
 
   // 貸款
-  const loanResults = loans.map((loan) => evaluateLoan(loan, today))
-  // 不賣舊屋時，所有貸款都留著繼續繳
+  // 賣舊屋時，舊屋房貸一定要還清；其他貸款看使用者選擇。不賣舊屋就全部留著繼續繳
   const selling = seller.enabled
-  const payoffTotal = selling ? loanResults.reduce((sum, r) => sum + r.payoffCash, 0) : 0
+  const loanResults = loans.map((loan) => evaluateLoan(loan, today, selling && (loan.kind === 'mortgage' || loan.settleOnSale)))
+  const payoffTotal = loanResults.reduce((sum, r) => sum + r.payoffCash, 0)
   const keptLoans = loans
     .map((loan, index) => ({ loan, result: loanResults[index] }))
-    .filter(({ loan }) => !selling || !loan.settleOnSale)
+    .filter(({ result }) => !result.settled)
   const retainedMonthly = keptLoans.reduce((sum, { result }) => sum + result.monthly, 0)
   const retainedPrincipal = keptLoans.reduce((sum, { loan }) => sum + loan.remainingPrincipal, 0)
   const totalPrincipal = loans.reduce((sum, loan) => sum + loan.remainingPrincipal, 0)
@@ -41,8 +41,8 @@ export function evaluate(scenario: Scenario, today: Date = new Date()): Evaluati
   const cashNeeded = downPayment + buyerFee + buyer.renovation + buyer.otherCosts
 
   // 現金
-  const availableCash =
-    usableAssets + salePriceValue - sellerFee - tax - sellerCosts - payoffTotal
+  const saleNetCash = salePriceValue - sellerFee - tax - sellerCosts - payoffTotal
+  const availableCash = usableAssets + saleNetCash
   const remainingCash = availableCash - cashNeeded
   const reserve = ((household.dailyExpense * 365) / 12) * household.reserveMonths
   const cashAfterReserve = remainingCash - reserve
@@ -115,6 +115,7 @@ export function evaluate(scenario: Scenario, today: Date = new Date()): Evaluati
     capitalGainsTax: tax,
     loans: loanResults,
     payoffTotal,
+    saleNetCash,
     retainedMonthly,
     retainedPrincipal,
     debtTotal: totalPrincipal,

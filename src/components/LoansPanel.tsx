@@ -137,13 +137,19 @@ export function LoansPanel({ scenario, evaluation, onChange }: Props) {
 
             <footer className="loan-foot">
               <div className="loan-settle">
-                <Toggle
-                  checked={loan.settleOnSale}
-                  onChange={(checked) => onChange((d) => void (d.loans[index].settleOnSale = checked))}
-                  label={`${loan.name}賣房後結清`}
-                  text="賣房後一次還清"
-                />
-                {loan.settleOnSale && (
+                {loan.kind === 'mortgage' ? (
+                  <span className="hint">
+                    {scenario.seller.enabled ? '舊屋房貸：賣屋時一定要全部還清' : '不賣舊屋，這筆房貸繼續繳'}
+                  </span>
+                ) : (
+                  <Toggle
+                    checked={loan.settleOnSale}
+                    onChange={(checked) => onChange((d) => void (d.loans[index].settleOnSale = checked))}
+                    label={`${loan.name}賣房後結清`}
+                    text="賣房後一次還清"
+                  />
+                )}
+                {result.settled && (
                   <label className="inline">
                     <span>違約金率</span>
                     <NumberField
@@ -161,9 +167,7 @@ export function LoansPanel({ scenario, evaluation, onChange }: Props) {
               <p className="loan-facts">
                 每月繳 {fmtMoney(result.monthly)} 元
                 {result.remainingMonths !== null && `，還要繳 ${Math.round(result.remainingMonths)} 個月`}
-                {loan.settleOnSale
-                  ? `，賣房時需拿出 ${fmtBig(result.payoffCash)}`
-                  : '，賣房後繼續繳'}
+                {result.settled ? `，賣房時需拿出 ${fmtBig(result.payoffCash)}` : '，賣房後繼續繳'}
               </p>
               {result.note && <p className="hint warn">{result.note}</p>}
             </footer>
