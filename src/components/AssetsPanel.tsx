@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { assetValue, usableValue } from '../core'
 import type { Evaluation, Scenario } from '../core'
 import { fmtBig, fmtMoney } from '../lib/format'
+import { ASSET_LABEL } from '../lib/labels'
 import { fetchLiveRates } from '../lib/rates'
 import { NumberField } from './NumberField'
 import { Row, Section } from './Section'
@@ -66,11 +67,11 @@ export function AssetsPanel({ scenario, evaluation, onChange }: Props) {
           return (
             <article className={`asset-card ${asset.use ? 'on' : ''}`} key={asset.key}>
               <header className="asset-head">
-                <span className="asset-name">{asset.name}</span>
+                <span className="asset-name">{ASSET_LABEL[asset.key]}</span>
                 <Toggle
                   checked={asset.use}
                   onChange={(checked) => onChange((d) => void (d.assets[index].use = checked))}
-                  label={`買房時動用${asset.name}`}
+                  label={`買房時動用${ASSET_LABEL[asset.key]}`}
                   text={asset.use ? '買房動用' : '不動用'}
                 />
               </header>
@@ -81,7 +82,7 @@ export function AssetsPanel({ scenario, evaluation, onChange }: Props) {
                   decimals={asset.key === 'btc' ? 4 : 0}
                   min={0}
                   suffix={unit ?? '元'}
-                  label={`${asset.name}現值`}
+                  label={`${ASSET_LABEL[asset.key]}現值`}
                 />
                 {unit && <span className="hint">≈ {fmtMoney(assetValue(asset, rates))} 元</span>}
               </div>

@@ -4,6 +4,7 @@ import type { Tone } from '../lib/zones'
 import { NumberField } from './NumberField'
 import { Row, Section } from './Section'
 import { SliderField } from './SliderField'
+import { ToneLegend } from './ToneLegend'
 
 export const PRICE_RANGE = { min: 5_000_000, max: 100_000_000, step: 100_000 }
 export const RATE_RANGE = { min: 0.01, max: 0.1, step: 0.0005 }
@@ -25,6 +26,7 @@ export function BuyerPanel({ scenario, evaluation, priceTones, rateTones, ltvTon
     <section className="panel buyer-panel" aria-label="買新房">
       <h2>想買的新房</h2>
       <p className="panel-lead">拉動下面的拉桿，右邊的結果會馬上變。拉桿的底色就是答案：哪一段買得起，哪一段買不起。</p>
+      <ToneLegend />
 
       <SliderField
         label="房價"

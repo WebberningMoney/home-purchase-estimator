@@ -6,7 +6,7 @@ import type { Loan, Seller } from '../src/core/types'
 const baseLoan: Loan = {
   id: 'l1',
   name: '信貸',
-  kind: '信貸',
+  kind: 'personal',
   originalPrincipal: 3_000_000,
   startDate: '2026-05-08',
   termYears: 10,

@@ -31,9 +31,9 @@ export function KeyFigures({ scenario, evaluation: e }: Props) {
       bad: e.cashAfterReserve < 0,
     },
     {
-      label: '每年要還的房貸',
+      label: '每年要還的貸款',
       value: fmtBig(e.annualPayment),
-      note: `每年最多能拿 ${fmtBig(e.annualBudget)} 還房貸，${e.budgetSlack >= 0 ? '還有餘裕' : '超出'} ${fmtBig(Math.abs(e.budgetSlack))}`,
+      note: `新房貸加保留的貸款；每年最多能拿 ${fmtBig(e.annualBudget)} 來還，${e.budgetSlack >= 0 ? '還有餘裕' : '超出'} ${fmtBig(Math.abs(e.budgetSlack))}`,
       bad: e.budgetSlack < 0,
     },
     {

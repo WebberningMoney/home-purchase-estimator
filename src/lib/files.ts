@@ -1,8 +1,10 @@
 import { parseScenario, serializeScenario } from './scenarioFile'
 import type { Scenario } from '../core'
 
-const FILTERS = [{ name: '換屋底氣', extensions: ['json'] }]
-const DEFAULT_NAME = '換屋底氣.json'
+const FILTERS = [{ name: 'Scenario file', extensions: ['json'] }]
+
+/** 預設檔名，例如 home-swap-estimator_20261102.json */
+const defaultName = (): string => `home-swap-estimator_${new Date().toISOString().slice(0, 10).replaceAll('-', '')}.json`
 
 export const inTauri = (): boolean => typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 
@@ -11,7 +13,7 @@ export async function saveScenarioToFile(scenario: Scenario): Promise<boolean> {
   const text = serializeScenario(scenario)
   if (inTauri()) {
     const { save } = await import('@tauri-apps/plugin-dialog')
-    const path = await save({ defaultPath: DEFAULT_NAME, filters: FILTERS })
+    const path = await save({ defaultPath: defaultName(), filters: FILTERS })
     if (!path) return false
     const { writeTextFile } = await import('@tauri-apps/plugin-fs')
     await writeTextFile(path, text)
@@ -20,7 +22,7 @@ export async function saveScenarioToFile(scenario: Scenario): Promise<boolean> {
   const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }))
   const link = document.createElement('a')
   link.href = url
-  link.download = DEFAULT_NAME
+  link.download = defaultName()
   link.click()
   URL.revokeObjectURL(url)
   return true

@@ -1,6 +1,6 @@
-# 換屋底氣
+# 換屋財務評估
 
-買得起，也撐得住。
+Home Swap Estimator
 
 賣掉現在的房子、買一間新的，錢夠不夠？拉動房價和利率，馬上知道買不買得起，也看得到存款每個月怎麼變。
 
@@ -52,7 +52,7 @@
    ```
    npm run tauri dev
    ```
-   完成後會跳出「換屋底氣」視窗。
+   完成後會跳出「換屋財務評估」視窗。
 
 ### 之後每次使用
 
@@ -71,7 +71,7 @@ npm run tauri dev
 npm run tauri build
 ```
 
-完成後到 `src-tauri/target/release/bundle/macos/` 找到「換屋底氣.app」，拖進「應用程式」資料夾。因為沒有向 Apple 付費簽署，第一次要按右鍵 →「打開」。
+完成後到 `src-tauri/target/release/bundle/macos/` 找到「換屋財務評估.app」，拖進「應用程式」資料夾。因為沒有向 Apple 付費簽署，第一次要按右鍵 →「打開」。
 
 ### 遇到問題
 

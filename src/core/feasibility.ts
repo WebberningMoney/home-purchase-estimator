@@ -2,16 +2,9 @@ import { assetValue, usableValue } from './assets'
 import { HORIZON_MONTHS, simulate, summarizeRunway } from './cashflow'
 import { evaluateLoan, pmt } from './loan'
 import { capitalGainsTax, salePrice } from './tax'
-import type { AnnualCheck, Evaluation, MaxPrice, Scenario, StressTest, Verdict } from './types'
+import type { AnnualCheck, Evaluation, Scenario, StressTest, Verdict } from './types'
 
-/** 每月繳 payment、共 months 個月，現在值多少（貸得到的金額） */
-function presentValue(annualRate: number, months: number, payment: number): number {
-  const i = annualRate / 12
-  if (i === 0) return payment * months
-  return (payment * (1 - Math.pow(1 + i, -months))) / i
-}
-
-/** 用目前填的全部條件，算出可不可行、現金能撐多久、最高能買多貴 */
+/** 用目前填的全部條件，算出可不可行、現金能撐多久。最高能買多貴見 affordability.ts */
 export function evaluate(scenario: Scenario, today: Date = new Date()): Evaluation {
   const { household, assets, rates, loans, seller, buyer } = scenario
 
@@ -113,38 +106,6 @@ export function evaluate(scenario: Scenario, today: Date = new Date()): Evaluati
     passed: stressGap === 0 || remainingCash / stressGap >= household.interruptMonths,
   }
 
-  // 最高可買房價
-  const budgetForNewLoan = annualBudget - (hasRetained ? retainedMonthly * 12 : 0)
-  const maxLoan = Math.max(0, presentValue(buyer.annualRate, buyer.termYears * 12, budgetForNewLoan / 12))
-  const byCashflow = buyer.ltv > 0 ? maxLoan / buyer.ltv : Infinity
-  const priceLoad = 1 - buyer.ltv + buyer.feeRate
-  const fixedCosts = buyer.renovation + buyer.otherCosts + reserve
-  const byCash = (availableCash - fixedCosts) / priceLoad
-  const safe = household.safeMonths
-  const byRunway = Math.max(
-    0,
-    Math.min(
-      byCash,
-      (availableCash - fixedCosts + safe * (annualIncome / 12 - annualLiving / 12 - retainedMonthly)) /
-        (priceLoad + safe * buyer.ltv * pmt(buyer.annualRate, buyer.termYears * 12, 1)),
-    ),
-  )
-  const withinBudget = Math.min(byCashflow, byCash)
-  let blocker: string
-  if (verdict === '可行') blocker = '無'
-  else if (verdict === '有條件可行') blocker = '年預算（需動用現金補）'
-  else if (cashCheck !== '通過') blocker = '自備現金'
-  else blocker = `現金續航（撐不到 ${household.warnMonths} 個月）`
-  const maxPrice: MaxPrice = {
-    budgetForNewLoan,
-    byCashflow,
-    byCash,
-    byRunway,
-    withinBudget,
-    gapToPrice: withinBudget - buyer.price,
-    blocker,
-  }
-
   return {
     assetsTotal,
     usableAssets,
@@ -181,7 +142,6 @@ export function evaluate(scenario: Scenario, today: Date = new Date()): Evaluati
     stress,
     netWorthBefore: assetsTotal + salePriceValue - totalPrincipal,
     netWorthAfter: buyer.price + remainingCash + (assetsTotal - usableAssets) - loanAmount - retainedPrincipal,
-    maxPrice,
     schedule,
   }
 }

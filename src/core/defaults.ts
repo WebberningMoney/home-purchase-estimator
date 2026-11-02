@@ -1,16 +1,6 @@
-import type { Asset, Scenario } from './types'
+import type { Scenario } from './types'
 
 /** 示意用的家庭資料，不是任何人的真實數字。使用者改成自己的即可 */
-export const ASSET_NAMES: Record<Asset['key'], string> = {
-  twStock: '台股（個股）',
-  twEtf: '台股（ETF）',
-  usStock: '美股',
-  fund: '基金',
-  policy: '儲蓄型保單',
-  btc: 'BTC',
-  cash: '現金（活存、定存、外幣）',
-}
-
 export function createDefaultScenario(): Scenario {
   return {
     household: {
@@ -27,20 +17,20 @@ export function createDefaultScenario(): Scenario {
       safeMonths: 36,
     },
     assets: [
-      { key: 'twStock', name: ASSET_NAMES.twStock, amount: 3_000_000, use: true, ratio: 1 },
-      { key: 'twEtf', name: ASSET_NAMES.twEtf, amount: 2_000_000, use: false, ratio: 1 },
-      { key: 'usStock', name: ASSET_NAMES.usStock, amount: 50_000, use: true, ratio: 0.5 },
-      { key: 'fund', name: ASSET_NAMES.fund, amount: 1_500_000, use: false, ratio: 1 },
-      { key: 'policy', name: ASSET_NAMES.policy, amount: 0, use: false, ratio: 1 },
-      { key: 'btc', name: ASSET_NAMES.btc, amount: 0.2, use: false, ratio: 1 },
-      { key: 'cash', name: ASSET_NAMES.cash, amount: 4_000_000, use: true, ratio: 1 },
+      { key: 'twStock', amount: 3_000_000, use: true, ratio: 1 },
+      { key: 'twEtf', amount: 2_000_000, use: false, ratio: 1 },
+      { key: 'usStock', amount: 50_000, use: true, ratio: 0.5 },
+      { key: 'fund', amount: 1_500_000, use: false, ratio: 1 },
+      { key: 'policy', amount: 0, use: false, ratio: 1 },
+      { key: 'btc', amount: 0.2, use: false, ratio: 1 },
+      { key: 'cash', amount: 4_000_000, use: true, ratio: 1 },
     ],
     rates: { usdTwd: 32, btcUsd: 80_000 },
     loans: [
       {
         id: 'loan-1',
         name: '房貸（現居住房屋）',
-        kind: '房貸',
+        kind: 'mortgage',
         originalPrincipal: 8_000_000,
         startDate: '2022-03-01',
         termYears: 30,
@@ -53,7 +43,7 @@ export function createDefaultScenario(): Scenario {
       {
         id: 'loan-2',
         name: '信貸',
-        kind: '信貸',
+        kind: 'personal',
         originalPrincipal: 1_500_000,
         startDate: '2024-06-01',
         termYears: 5,

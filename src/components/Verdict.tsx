@@ -1,7 +1,7 @@
 import { describe } from '../core'
 import type { Evaluation, MaxAffordable, Scenario } from '../core'
 import { fmtBig, fmtPercent } from '../lib/format'
-import { TONE_LABEL, toneOf } from '../lib/zones'
+import { toneOf } from '../lib/zones'
 
 interface Props {
   scenario: Scenario
@@ -36,16 +36,6 @@ export function Verdict({ scenario, evaluation, max }: Props) {
           <b>{evaluation.runway.rating}</b>
         </li>
       </ul>
-      <p className="verdict-legend">
-        拉桿底色：<i className="dot good" />
-        {TONE_LABEL.good}
-        <i className="dot steady" />
-        {TONE_LABEL.steady}
-        <i className="dot watch" />
-        {TONE_LABEL.watch}
-        <i className="dot bad" />
-        {TONE_LABEL.bad}
-      </p>
     </section>
   )
 }

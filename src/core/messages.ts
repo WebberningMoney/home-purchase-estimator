@@ -24,15 +24,17 @@ export function describe(evaluation: Evaluation, scenario: Scenario, max: MaxAff
   }
 
   if (verdict === '有條件可行') {
-    let detail: string
     if (!runway.burnsCash) {
-      detail = '每年還款超過預算，但收入還是夠付，不用動到存款。'
-    } else if (runway.months === null) {
-      detail = '每年會動用存款，但之後有貸款還完，缺口會消失，存款撐得過全程。'
-    } else {
-      detail = `每年會動用存款，大約能撐 ${runway.months} 個月（${yearsText(runway.months)} 年）。`
+      return { headline: '買得起，但達不到存款目標', detail: '每年還款超過預算，但收入還是夠付，不用動到存款。' }
     }
-    return { headline: '勉強買得起，要靠存款補', detail }
+    const lasts =
+      runway.months === null
+        ? '之後有貸款還完，缺口會消失，存款撐得過全程。'
+        : `存款大約能撐 ${runway.months} 個月（${yearsText(runway.months)} 年）。`
+    if (runway.rating === '需留意') {
+      return { headline: '勉強買得起，存款偏緊', detail: `每年要動用存款，${lasts}撐不到低風險門檻。` }
+    }
+    return { headline: '買得起，但每月要動用存款', detail: `每年要動用存款，${lasts}` }
   }
 
   const diff = Math.abs(max.price - price)
