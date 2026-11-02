@@ -18,15 +18,26 @@ export function SellerPanel({ scenario, evaluation, onChange }: Props) {
   return (
     <Section
       title="賣舊屋"
+      disabled={!seller.enabled}
+      action={
+        <Toggle
+          checked={seller.enabled}
+          onChange={(checked) => onChange((d) => void (d.seller.enabled = checked))}
+          label="要賣舊屋"
+          text={seller.enabled ? '要賣' : '不賣'}
+        />
+      }
       summary={
-        evaluation.salePrice > 0
+        !seller.enabled
+          ? '不賣舊屋，下面的數字都不計算'
+          : evaluation.salePrice > 0
           ? `賣價 ${fmtBig(evaluation.salePrice)}，扣掉費用與貸款後約剩 ${fmtBig(
               evaluation.salePrice - evaluation.sellerFee - evaluation.capitalGainsTax - evaluation.payoffTotal,
             )}`
           : '還沒有舊屋要賣'
       }
     >
-      <p className="hint block">如果是第一次買房、沒有舊屋，每坪單價填 0 就好。</p>
+      <p className="hint block">第一次買房、或舊屋要留著不賣，就把右上角開關關掉。</p>
       <Row label="每坪單價">
         <NumberField
           value={seller.unitPrice}

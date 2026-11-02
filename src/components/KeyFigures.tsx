@@ -14,7 +14,7 @@ interface Figure {
 }
 
 export function KeyFigures({ scenario, evaluation: e }: Props) {
-  const { household, buyer } = scenario
+  const { household } = scenario
   const first = e.schedule[0]
 
   const runwayValue = !e.runway.burnsCash
@@ -43,16 +43,6 @@ export function KeyFigures({ scenario, evaluation: e }: Props) {
         ? `每月多花 ${fmtMoney(e.monthlyOutflow)} 元；${household.warnMonths} 個月內算高風險，${household.safeMonths} 個月以上算低風險`
         : '每年收入付得起生活費與房貸',
       bad: e.runway.rating === '高風險',
-    },
-    {
-      label: '最高買得起的房價',
-      value: e.maxPrice.withinBudget > 0 ? fmtBig(e.maxPrice.withinBudget) : '0',
-      note: `完全不動存款的上限；比預計房價${e.maxPrice.gapToPrice < 0 ? '低' : '高'} ${fmtBig(Math.abs(Math.max(e.maxPrice.gapToPrice, -buyer.price)))}`,
-    },
-    {
-      label: `存款撐 ${household.safeMonths / 12} 年的房價上限`,
-      value: fmtBig(e.maxPrice.byRunway),
-      note: '只保證前幾年存款不見底，沒算貸款還完後的輕鬆期',
     },
     {
       label: `收入中斷 ${household.interruptMonths} 個月`,

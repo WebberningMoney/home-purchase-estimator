@@ -5,6 +5,7 @@ import { fmtBig, fmtMoney } from '../lib/format'
 import { fetchLiveRates } from '../lib/rates'
 import { NumberField } from './NumberField'
 import { Row, Section } from './Section'
+import { SliderField } from './SliderField'
 import { Toggle } from './Toggle'
 
 interface Props {
@@ -17,9 +18,10 @@ const UNIT: Record<string, string> = { usStock: '美元', btc: '顆' }
 
 type RateStatus = { kind: 'idle' } | { kind: 'loading' } | { kind: 'ok'; at: string } | { kind: 'error'; message: string }
 
-/** 資產：每一類一列，選要不要動用、動用幾成 */
+/** 資產：每一類一張卡，先填現值，再決定買房時動用幾成 */
 export function AssetsPanel({ scenario, evaluation, onChange }: Props) {
   const { assets, rates } = scenario
+  const usableShare = evaluation.assetsTotal > 0 ? (evaluation.usableAssets / evaluation.assetsTotal) * 100 : 0
   const [status, setStatus] = useState<RateStatus>({ kind: 'idle' })
 
   const refreshRates = async () => {
@@ -41,43 +43,67 @@ export function AssetsPanel({ scenario, evaluation, onChange }: Props) {
       title="資產"
       summary={`共 ${fmtBig(evaluation.assetsTotal)}，買房會動用 ${fmtBig(evaluation.usableAssets)}`}
     >
-      <p className="hint block">美股填美元、BTC 填顆數，會自動換成台幣。打開「動用」才會拿來買房。</p>
-      <div className="asset-table" role="table">
-        {assets.map((asset, index) => (
-          <div className="asset-row" role="row" key={asset.key}>
-            <div className="asset-name">
-              <span>{asset.name}</span>
-              <span className="hint">
-                {UNIT[asset.key] ? `≈ ${fmtMoney(assetValue(asset, rates))} 元` : ''}
-              </span>
-            </div>
-            <NumberField
-              value={asset.amount}
-              onChange={(value) => onChange((d) => void (d.assets[index].amount = value))}
-              decimals={asset.key === 'btc' ? 4 : 0}
-              min={0}
-              suffix={UNIT[asset.key] ?? '元'}
-              label={`${asset.name}金額`}
-            />
-            <Toggle
-              checked={asset.use}
-              onChange={(checked) => onChange((d) => void (d.assets[index].use = checked))}
-              label={`動用${asset.name}`}
-              text="動用"
-            />
-            <NumberField
-              value={asset.ratio}
-              onChange={(value) => onChange((d) => void (d.assets[index].ratio = value))}
-              scale={100}
-              min={0}
-              max={1}
-              suffix="%"
-              label={`${asset.name}動用比例`}
-              className={asset.use ? '' : 'dim'}
-            />
-            <span className="asset-usable">{asset.use ? fmtBig(usableValue(asset, rates)) : '—'}</span>
-          </div>
-        ))}
+      <div className="asset-overview">
+        <div className="asset-bar" aria-hidden="true">
+          <span className="asset-bar-use" style={{ width: `${usableShare}%` }} />
+        </div>
+        <div className="asset-legend">
+          <span>
+            <i className="dot use" />
+            買房動用 <b>{fmtBig(evaluation.usableAssets)}</b>
+          </span>
+          <span>
+            <i className="dot keep" />
+            留著不動 <b>{fmtBig(evaluation.unusedAssets)}</b>
+          </span>
+        </div>
+      </div>
+      <p className="hint block">每一筆資產：先填現在值多少，再決定買房時要不要動用、動用幾成。</p>
+
+      <div className="asset-list">
+        {assets.map((asset, index) => {
+          const unit = UNIT[asset.key]
+          return (
+            <article className={`asset-card ${asset.use ? 'on' : ''}`} key={asset.key}>
+              <header className="asset-head">
+                <span className="asset-name">{asset.name}</span>
+                <Toggle
+                  checked={asset.use}
+                  onChange={(checked) => onChange((d) => void (d.assets[index].use = checked))}
+                  label={`買房時動用${asset.name}`}
+                  text={asset.use ? '買房動用' : '不動用'}
+                />
+              </header>
+              <div className="asset-amount">
+                <NumberField
+                  value={asset.amount}
+                  onChange={(value) => onChange((d) => void (d.assets[index].amount = value))}
+                  decimals={asset.key === 'btc' ? 4 : 0}
+                  min={0}
+                  suffix={unit ?? '元'}
+                  label={`${asset.name}現值`}
+                />
+                {unit && <span className="hint">≈ {fmtMoney(assetValue(asset, rates))} 元</span>}
+              </div>
+              {asset.use && (
+                <SliderField
+                  label="動用幾成"
+                  value={asset.ratio}
+                  onChange={(value) => onChange((d) => void (d.assets[index].ratio = value))}
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  scale={100}
+                  decimals={0}
+                  suffix="%"
+                  minLabel="0%"
+                  maxLabel="100%"
+                  hint={`買房時拿出 ${fmtBig(usableValue(asset, rates))}`}
+                />
+              )}
+            </article>
+          )
+        })}
       </div>
 
       <Section title="匯率與幣價" summary={`1 美元 = ${rates.usdTwd.toFixed(3)} 元，BTC = ${Math.round(rates.btcUsd).toLocaleString('en-US')} 美元`}>

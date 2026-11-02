@@ -21,19 +21,22 @@ export function evaluate(scenario: Scenario, today: Date = new Date()): Evaluati
 
   // 貸款
   const loanResults = loans.map((loan) => evaluateLoan(loan, today))
-  const payoffTotal = loanResults.reduce((sum, r) => sum + r.payoffCash, 0)
+  // 不賣舊屋時，所有貸款都留著繼續繳
+  const selling = seller.enabled
+  const payoffTotal = selling ? loanResults.reduce((sum, r) => sum + r.payoffCash, 0) : 0
   const keptLoans = loans
     .map((loan, index) => ({ loan, result: loanResults[index] }))
-    .filter(({ loan }) => !loan.settleOnSale)
+    .filter(({ loan }) => !selling || !loan.settleOnSale)
   const retainedMonthly = keptLoans.reduce((sum, { result }) => sum + result.monthly, 0)
   const retainedPrincipal = keptLoans.reduce((sum, { loan }) => sum + loan.remainingPrincipal, 0)
   const totalPrincipal = loans.reduce((sum, loan) => sum + loan.remainingPrincipal, 0)
   const hasRetained = retainedPrincipal > 0
 
   // 賣舊屋
-  const salePriceValue = salePrice(seller)
+  const salePriceValue = selling ? salePrice(seller) : 0
   const sellerFee = salePriceValue * seller.feeRate
-  const tax = capitalGainsTax(seller)
+  const tax = selling ? capitalGainsTax(seller) : 0
+  const sellerCosts = selling ? seller.landValueTax + seller.otherFees : 0
 
   // 買新屋
   const loanAmount = buyer.price * buyer.ltv
@@ -46,7 +49,7 @@ export function evaluate(scenario: Scenario, today: Date = new Date()): Evaluati
 
   // 現金
   const availableCash =
-    usableAssets + salePriceValue - sellerFee - tax - seller.landValueTax - seller.otherFees - payoffTotal
+    usableAssets + salePriceValue - sellerFee - tax - sellerCosts - payoffTotal
   const remainingCash = availableCash - cashNeeded
   const reserve = ((household.dailyExpense * 365) / 12) * household.reserveMonths
   const cashAfterReserve = remainingCash - reserve
@@ -153,6 +156,7 @@ export function evaluate(scenario: Scenario, today: Date = new Date()): Evaluati
     payoffTotal,
     retainedMonthly,
     retainedPrincipal,
+    debtTotal: totalPrincipal,
     loanAmount,
     graceMonthly,
     monthlyPayment,

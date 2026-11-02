@@ -1,8 +1,8 @@
 import { parseScenario, serializeScenario } from './scenarioFile'
 import type { Scenario } from '../core'
 
-const FILTERS = [{ name: '換屋試算', extensions: ['json'] }]
-const DEFAULT_NAME = '換屋試算.json'
+const FILTERS = [{ name: '換屋底氣', extensions: ['json'] }]
+const DEFAULT_NAME = '換屋底氣.json'
 
 export const inTauri = (): boolean => typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 

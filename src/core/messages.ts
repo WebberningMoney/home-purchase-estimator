@@ -1,3 +1,4 @@
+import type { MaxAffordable } from './affordability'
 import type { Evaluation, Scenario } from './types'
 
 const wan = (value: number) => Math.round(value / 10000).toLocaleString('en-US')
@@ -11,9 +12,8 @@ export interface Description {
 }
 
 /** 把算出來的結果翻成白話。可行、有條件可行、不可行各有一套說法 */
-export function describe(evaluation: Evaluation, scenario: Scenario): Description {
-  const { verdict, runway, maxPrice } = evaluation
-  const { safeMonths } = scenario.household
+export function describe(evaluation: Evaluation, scenario: Scenario, max: MaxAffordable): Description {
+  const { verdict, runway } = evaluation
   const price = scenario.buyer.price
 
   if (verdict === '可行') {
@@ -35,13 +35,10 @@ export function describe(evaluation: Evaluation, scenario: Scenario): Descriptio
     return { headline: '勉強買得起，要靠存款補', detail }
   }
 
-  const upper = maxPrice.byRunway
-  const diff = Math.abs(upper - price)
-  const where = upper < price ? '低' : '高'
+  const diff = Math.abs(max.price - price)
+  const where = max.price < price ? '低' : '高'
   return {
     headline: '買不起',
-    detail:
-      `卡在「${maxPrice.blocker}」。若存款只要撐 ${safeMonths / 12} 年，` +
-      `房價上限約 ${wan(upper)} 萬（比預計價${where} ${wan(diff)} 萬）。`,
+    detail: `卡在「${max.limitedBy === '存款續航' ? '存款撐不夠久' : '買房現金'}」。照現在的條件，房價上限約 ${wan(max.price)} 萬（比預計價${where} ${wan(diff)} 萬）。`,
   }
 }

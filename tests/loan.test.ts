@@ -78,6 +78,7 @@ describe('賣房後結清', () => {
 
 describe('房地合一稅', () => {
   const seller: Seller = {
+    enabled: true,
     unitPrice: 500_000,
     ping: 20,
     feeRate: 0.04,

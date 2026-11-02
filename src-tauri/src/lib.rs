@@ -5,5 +5,5 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_http::init())
         .run(tauri::generate_context!())
-        .expect("無法啟動換屋試算");
+        .expect("無法啟動換屋底氣");
 }

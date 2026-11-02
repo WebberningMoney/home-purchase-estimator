@@ -66,6 +66,8 @@ export interface Household {
 }
 
 export interface Seller {
+  /** false＝不賣舊屋（第一次買房，或舊屋留著），賣屋相關數字全部不計 */
+  enabled: boolean
   /** 每坪單價 */
   unitPrice: number
   ping: number
@@ -183,6 +185,8 @@ export interface Evaluation {
   payoffTotal: number
   retainedMonthly: number
   retainedPrincipal: number
+  /** 現有貸款的本金合計 */
+  debtTotal: number
   loanAmount: number
   graceMonthly: number
   monthlyPayment: number
