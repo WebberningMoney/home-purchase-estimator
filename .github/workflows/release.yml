@@ -1,0 +1,76 @@
+# 在雲端分別用 Mac 和 Windows 機器打包。
+# 推上 v 開頭的版本標籤（例如 v1.0.0）會自動發佈到 Releases；手動執行只會產出可下載的測試檔，不會發佈。
+name: 打包 Mac 與 Windows 版
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - run: npm test
+      - run: npm run tauri build -- --bundles dmg
+      - name: 整理檔名
+        run: |
+          mkdir out
+          mv src-tauri/target/release/bundle/dmg/*.dmg out/HomePurchaseEstimator-macOS-AppleSilicon.dmg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac
+          path: out/*
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - run: npm test
+      # 不做安裝程式，只要程式本體；畫面已經包在裡面，解壓縮後雙擊就能開
+      - run: npm run tauri build -- --no-bundle
+      - name: 壓縮成免安裝版
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path stage, out | Out-Null
+          Copy-Item src-tauri/target/release/home-purchase-estimator.exe stage/HomePurchaseEstimator.exe
+          Compress-Archive -Path stage/HomePurchaseEstimator.exe -DestinationPath out/HomePurchaseEstimator-Windows-x64.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: out/*
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [mac, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/*
+          generate_release_notes: true

@@ -35,9 +35,11 @@ button, input, select { font: inherit; color: inherit; }
 /* ===== 上方工具列 ===== */
 .toolbar {
   display: flex; align-items: center; gap: 16px;
-  height: 52px; padding: 0 20px 0 92px; /* 左邊留給 macOS 的紅黃綠按鈕，高度要和按鈕位置對齊 */
+  height: 52px; padding: 0 20px;
   background: var(--card); border-bottom: 1px solid var(--line);
 }
+/* 左邊留給 macOS 的紅黃綠按鈕，高度要和按鈕位置對齊 */
+[data-platform='macos'] .toolbar { padding-left: 92px; }
 .brand { font-weight: 700; font-size: 16px; letter-spacing: 0.08em; }
 .tagline { color: var(--ink-soft); font-size: 12px; }
 .brand, .tagline, .notice { pointer-events: none; } /* 讓文字不擋住拖動視窗 */
