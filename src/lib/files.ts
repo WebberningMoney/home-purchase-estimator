@@ -3,8 +3,8 @@ import type { Scenario } from '../core'
 
 const FILTERS = [{ name: 'Scenario file', extensions: ['json'] }]
 
-/** 預設檔名，例如 home-swap-estimator_20261102.json */
-const defaultName = (): string => `home-swap-estimator_${new Date().toISOString().slice(0, 10).replaceAll('-', '')}.json`
+/** 預設檔名，例如 home-purchase-estimator_20261102.json */
+const defaultName = (): string => `home-purchase-estimator_${new Date().toISOString().slice(0, 10).replaceAll('-', '')}.json`
 
 export const inTauri = (): boolean => typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 

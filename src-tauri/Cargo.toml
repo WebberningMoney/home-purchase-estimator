@@ -1,11 +1,11 @@
 [package]
-name = "home-swap-estimator"
+name = "home-purchase-estimator-macos"
 version = "1.0.0"
 description = "購屋財務評估"
 edition = "2021"
 
 [lib]
-name = "home_swap_estimator_lib"
+name = "home_purchase_estimator_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

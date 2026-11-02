@@ -1,9 +1,11 @@
 import { createDefaultScenario } from '../core'
 import type { Loan, LoanKind, Scenario } from '../core'
 
-const APP_ID = 'home-swap-estimator'
+const APP_ID = 'home-purchase-estimator'
+/** 改名前存的檔案用的識別碼，仍然讀得進來 */
+const EARLIER_APP_IDS = ['home-swap-estimator']
 const FILE_VERSION = 1
-const STORAGE_KEY = 'home-swap-estimator:scenario'
+const STORAGE_KEY = 'home-purchase-estimator:scenario'
 
 interface ScenarioFile {
   app: typeof APP_ID
@@ -35,7 +37,7 @@ export function parseScenario(text: string): Scenario {
   } catch {
     throw new Error('這個檔案不是有效的 JSON，打不開')
   }
-  if (!isRecord(raw) || raw.app !== APP_ID || !isRecord(raw.scenario)) {
+  if (!isRecord(raw) || ![APP_ID, ...EARLIER_APP_IDS].includes(String(raw.app)) || !isRecord(raw.scenario)) {
     throw new Error('這不是「購屋財務評估」存的檔案')
   }
   const base = createDefaultScenario()
