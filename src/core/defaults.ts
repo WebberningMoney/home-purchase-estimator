@@ -14,8 +14,7 @@ export function createDefaultScenario(): Scenario {
       dailyExpense: 1_200,
       yearlySavings: 200_000,
       reserveMonths: 6,
-      interruptMonths: 12,
-      warnMonths: 18,
+      warnMonths: 12,
       safeMonths: 36,
     },
     // 合計 500 萬：美股 2 萬美元、BTC 0.1 顆（匯率見 rates）

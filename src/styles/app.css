@@ -122,6 +122,12 @@ button, input, select { font: inherit; color: inherit; }
 /* ===== 資產、貸款 ===== */
 .asset-table { display: flex; flex-direction: column; gap: 6px; }
 .asset-row, .income-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+/* 第一行放名稱與刪除，第二行放金額與開關，窄欄也不擠 */
+.income-row { padding-bottom: 6px; }
+.income-row .text-input { flex: 1 1 calc(100% - 64px); min-width: 0; }
+.income-row .icon-button { order: 1; white-space: nowrap; }
+.income-row > :not(.text-input):not(.icon-button) { order: 2; }
+.income-row .icon-button:disabled { opacity: 0.35; pointer-events: none; }
 .asset-name { flex: 1; min-width: 80px; }
 .asset-usable { color: var(--ink-soft); font-size: 12px; }
 .rates-action { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
@@ -154,6 +160,10 @@ button, input, select { font: inherit; color: inherit; }
 .verdict-checks .ok b { color: var(--tone-good); }
 .verdict-checks .mid b { color: var(--tone-watch); }
 .verdict-checks .no b { color: var(--tone-bad); }
+.verdict-checks .risk-none b { color: var(--tone-good); }
+.verdict-checks .risk-low b { color: var(--tone-steady); }
+.verdict-checks .risk-medium b { color: var(--tone-watch); }
+.verdict-checks .risk-high b { color: var(--tone-bad); }
 .verdict-legend { margin-top: 16px; color: var(--board-dim); font-size: 12px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; }
 .dot.good { background: var(--tone-good); } .dot.steady { background: var(--tone-steady); }
@@ -230,10 +240,11 @@ fieldset.section-body:disabled { opacity: 0.4; filter: grayscale(1); }
 .capacity-price { display: block; font-family: var(--number-font); font-size: 28px; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .capacity-main p { margin-top: 2px; }
 .gauge { margin: 14px 0 4px; }
-.gauge-track { position: relative; height: 10px; border-radius: 5px; background: var(--board); border: 1px solid var(--board-line); }
-.gauge-fill, .gauge-goal { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; }
-.gauge-fill { background: var(--tone-steady); opacity: 0.85; }
-.gauge-goal { background: var(--tone-good); }
+.gauge-track { position: relative; height: 10px; border-radius: 5px; background: var(--tone-bad); border: 1px solid var(--board-line); }
+.gauge-zone { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; }
+.gauge-zone.watch { background: var(--tone-watch); }
+.gauge-zone.steady { background: var(--tone-steady); }
+.gauge-zone.good { background: var(--tone-good); }
 .gauge-want { position: absolute; top: -5px; width: 3px; height: 18px; margin-left: -1px; border-radius: 2px; background: var(--board-text); }
 .gauge-want.over { background: var(--tone-bad); }
 .gauge-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--board-dim); margin-top: 6px; }
@@ -278,7 +289,6 @@ fieldset.section-body:disabled { opacity: 0.4; filter: grayscale(1); }
 .rate-change-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .rate-change-row .number-field input { width: 64px; }
 
-.goal-line { margin-top: 4px; font-size: 13px; color: var(--board-dim); }
-.goal-line b { color: var(--tone-good); font-weight: 600; }
-.gauge-labels .dot { margin: 0 4px 0 8px; width: 8px; height: 8px; }
-.gauge-labels .dot:first-child { margin-left: 0; }
+.boundaries { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 3px; font-size: 13px; color: var(--board-dim); }
+.boundaries li { display: flex; align-items: center; gap: 6px; }
+.boundaries b { margin-left: auto; color: var(--board-text); font-weight: 600; font-variant-numeric: tabular-nums; }

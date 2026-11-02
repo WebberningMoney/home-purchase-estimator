@@ -1,10 +1,12 @@
-import type { Evaluation, MaxAffordable, Scenario } from '../core'
+import { PRICE_CEILING, RISK_NAME } from '../core'
+import type { Evaluation, PriceLimits, RiskLevel, Scenario } from '../core'
 import { fmtBig, fmtMoney, fmtMonths, fmtPercent } from '../lib/format'
+import type { Tone } from '../lib/zones'
 
 interface Props {
   scenario: Scenario
   evaluation: Evaluation
-  max: MaxAffordable
+  limits: PriceLimits
 }
 
 type Mark = 'ok' | 'no' | 'info'
@@ -12,18 +14,23 @@ type Mark = 'ok' | 'no' | 'info'
 const MARK_TEXT: Record<Mark, string> = { ok: '✓', no: '✗', info: '＋' }
 
 /** 想買的房價不管多少，先告訴你：照現在的條件，最多買到哪裡 */
-export function Capacity({ scenario, evaluation: e, max }: Props) {
+export function Capacity({ scenario, evaluation: e, limits }: Props) {
   const { buyer, household } = scenario
-  const unlimited = max.limitedBy === '沒有上限'
-  const gap = max.price - buyer.price
-  const scaleMax = Math.max(buyer.price, unlimited ? buyer.price : max.price) * 1.12 || 1
-  const wantAt = Math.min(100, (buyer.price / scaleMax) * 100)
-  const limitAt = Math.min(100, (max.price / scaleMax) * 100)
-  const goalAt = Math.min(100, (max.savingsGoalPrice / scaleMax) * 100)
+  const unlimited = limits.limitedBy === '沒有上限'
+  const gap = limits.lowRisk - buyer.price
+  const finite = (price: number) => (price >= PRICE_CEILING ? 0 : price)
+  const scaleMax = Math.max(buyer.price, finite(limits.mediumRisk), finite(limits.lowRisk)) * 1.12 || 1
+  const at = (price: number) => Math.min(100, (price / scaleMax) * 100)
   const savedPerYear = e.annualNetCashflow
+  const priceText = (price: number) => (price >= PRICE_CEILING ? '10 億以上' : price <= 0 ? '買不起任何房' : fmtBig(price))
+  const boundaries: { tone: Tone; level: RiskLevel; price: number }[] = [
+    { tone: 'good', level: 'none', price: limits.noRisk },
+    { tone: 'steady', level: 'low', price: limits.lowRisk },
+    { tone: 'watch', level: 'medium', price: limits.mediumRisk },
+  ]
 
   const reserveGap = e.cashAfterReserve
-  const runwayOk = e.runway.rating === '低風險' || e.runway.rating === '不耗用現金'
+  const runwayOk = e.runway.rating === 'none' || e.runway.rating === 'low'
   const runwayText = !e.runway.burnsCash
     ? '每月收入付得起，不用動存款'
     : e.runway.months === null
@@ -48,7 +55,7 @@ export function Capacity({ scenario, evaluation: e, max }: Props) {
     },
     {
       mark: e.annualCheck === '通過' ? 'ok' : 'no',
-      text: `（另外算）每年存下 ${fmtBig(household.yearlySavings)} 的目標`,
+      text: `每年存下 ${fmtBig(household.yearlySavings)} 的預計存款（達到才是無風險）`,
       note:
         savedPerYear >= household.yearlySavings
           ? `每年約存得下 ${fmtBig(savedPerYear)}`
@@ -78,33 +85,37 @@ export function Capacity({ scenario, evaluation: e, max }: Props) {
 
       <div className="capacity-body">
         <div className="capacity-main">
-          <b className="capacity-price">{max.price <= 0 ? '買不起任何房' : unlimited ? '10 億以上' : fmtBig(max.price)}</b>
-          {max.price > 0 && !unlimited && (
+          <b className="capacity-price">{priceText(limits.lowRisk)}</b>
+          {limits.lowRisk > 0 && !unlimited && (
             <p className={gap >= 0 ? 'pos' : 'neg'}>
               {gap >= 0
                 ? `想買的 ${fmtBig(buyer.price)} 在範圍內，還有 ${fmtBig(gap)} 的空間`
                 : `想買的 ${fmtBig(buyer.price)} 超出 ${fmtBig(-gap)}`}
             </p>
           )}
-          {!unlimited && <p className="hint">再貴就會先卡在「{max.limitedBy}」</p>}
-          <p className="goal-line">
-            要同時每年存下 {fmtBig(household.yearlySavings)}：
-            <b>{max.savingsGoalPrice > 0 ? `最多 ${fmtBig(max.savingsGoalPrice)}` : '照目前條件做不到'}</b>
-          </p>
-          {max.price > 0 && !unlimited && (
+          {!unlimited && <p className="hint">再貴就會先卡在「{limits.limitedBy}」</p>}
+          <ul className="boundaries">
+            {boundaries.map(({ tone, level, price }) => (
+              <li key={level}>
+                <i className={`dot ${tone}`} />
+                <span>{RISK_NAME[level]}</span>
+                <b>{price > 0 ? `最多 ${priceText(price)}` : '照目前條件做不到'}</b>
+              </li>
+            ))}
+            <li>
+              <i className="dot bad" />
+              <span>再貴就是{RISK_NAME.high}</span>
+            </li>
+          </ul>
+          {limits.lowRisk > 0 && !unlimited && (
             <div className="gauge" aria-hidden="true">
               <div className="gauge-track">
-                <span className="gauge-fill" style={{ width: `${limitAt}%` }} />
-                <span className="gauge-goal" style={{ width: `${goalAt}%` }} />
-                <span className={`gauge-want ${gap >= 0 ? '' : 'over'}`} style={{ left: `${wantAt}%` }} />
+                <span className="gauge-zone watch" style={{ width: `${at(limits.mediumRisk)}%` }} />
+                <span className="gauge-zone steady" style={{ width: `${at(limits.lowRisk)}%` }} />
+                <span className="gauge-zone good" style={{ width: `${at(limits.noRisk)}%` }} />
+                <span className={`gauge-want ${gap >= 0 ? '' : 'over'}`} style={{ left: `${at(buyer.price)}%` }} />
               </div>
               <div className="gauge-labels">
-                <span>
-                  <i className="dot good" />
-                  存得到目標
-                  <i className="dot steady" />
-                  要動用存款
-                </span>
                 <span>▲ 想買 {fmtBig(buyer.price)}</span>
               </div>
             </div>
@@ -121,7 +132,7 @@ export function Capacity({ scenario, evaluation: e, max }: Props) {
           ))}
         </ul>
       </div>
-      <p className="hint">上限＝同時守住前三件事的最高房價；每年存款目標另外算，沒達標只代表要動用存款，不代表買不起。✓ ✗ 是你目前想買的房價的結果。</p>
+      <p className="hint">大數字是低風險以內的最高房價；綠色是連存款目標都達成的最高房價，黃色是撐得過警戒月數的最高房價。✓ ✗ 是你目前想買的房價的結果。</p>
 
       <dl className="snapshot">
         {snapshot.map(([label, value]) => (

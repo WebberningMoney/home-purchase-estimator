@@ -1,20 +1,13 @@
-import { evaluate } from '../core'
-import type { Evaluation, Scenario } from '../core'
+import { evaluate, riskLevel } from '../core'
+import type { Evaluation, RiskLevel, Scenario } from '../core'
 
-/** 拉桿底色的四種狀態 */
+/** 拉桿底色：綠＝無風險、藍＝低風險、黃＝中風險、紅＝高風險 */
 export type Tone = 'good' | 'steady' | 'watch' | 'bad'
 
-export const TONE_LABEL: Record<Tone, string> = {
-  good: '買得起',
-  steady: '買得起（要動用存款）',
-  watch: '勉強（存款偏緊）',
-  bad: '買不起',
-}
+const TONE_OF_RISK: Record<RiskLevel, Tone> = { none: 'good', low: 'steady', medium: 'watch', high: 'bad' }
 
 export function toneOf(evaluation: Evaluation): Tone {
-  if (evaluation.verdict === '可行') return 'good'
-  if (evaluation.verdict === '不可行') return 'bad'
-  return evaluation.runway.rating === '需留意' ? 'watch' : 'steady'
+  return TONE_OF_RISK[riskLevel(evaluation)]
 }
 
 /**

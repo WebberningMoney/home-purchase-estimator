@@ -1,3 +1,4 @@
+import { RISK_NAME } from '../core'
 import type { Evaluation, Scenario } from '../core'
 import { fmtBig, fmtMoney, fmtMonths } from '../lib/format'
 
@@ -49,18 +50,18 @@ export function KeyFigures({ scenario, evaluation: e }: Props) {
       label: '存款能撐多久',
       value: runwayValue,
       note: e.runway.burnsCash
-        ? `每月多花 ${fmtMoney(e.monthlyOutflow)} 元；${household.warnMonths} 個月內算高風險，${household.safeMonths} 個月以上算低風險`
+        ? `每月多花 ${fmtMoney(e.monthlyOutflow)} 元；少於 ${household.warnMonths} 個月算高風險，${household.safeMonths} 個月以上算低風險`
         : '每年收入付得起生活費與房貸',
-      bad: e.runway.rating === '高風險',
+      bad: e.runway.rating === 'high',
     },
     {
-      label: `收入中斷 ${household.interruptMonths} 個月`,
-      value: e.stress.months === null ? '不受影響' : `${e.stress.passed ? '通過' : '不通過'}`,
+      label: '標記的收入中斷',
+      value: e.stress.months === null ? '不受影響' : RISK_NAME[e.stress.rating],
       note:
         e.stress.months === null
           ? '就算標記的收入消失，剩下的收入還是夠'
           : `每月缺 ${fmtMoney(e.stress.monthlyGap)} 元，買完房的現金約撐 ${Math.max(0, e.stress.months).toFixed(1)} 個月`,
-      bad: !e.stress.passed,
+      bad: e.stress.rating === 'high',
     },
   ]
 
