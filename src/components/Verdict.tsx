@@ -1,17 +1,18 @@
 import { describe } from '../core'
-import type { Evaluation, Scenario } from '../core'
+import type { Evaluation, MaxAffordable, Scenario } from '../core'
 import { fmtBig, fmtPercent } from '../lib/format'
 import { TONE_LABEL, toneOf } from '../lib/zones'
 
 interface Props {
   scenario: Scenario
   evaluation: Evaluation
+  max: MaxAffordable
 }
 
 /** 右邊最上面的大結論：一眼看出買不買得起 */
-export function Verdict({ scenario, evaluation }: Props) {
+export function Verdict({ scenario, evaluation, max }: Props) {
   const tone = toneOf(evaluation)
-  const text = describe(evaluation, scenario)
+  const text = describe(evaluation, scenario, max)
   const { buyer } = scenario
 
   return (

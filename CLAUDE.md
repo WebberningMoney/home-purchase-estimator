@@ -1,4 +1,4 @@
-# 換屋試算 — 開發規則
+# 換屋底氣 — 開發規則
 
 - 技術：Tauri 2 + React + TypeScript + Vite。測試用 Vitest。
 - 所有計算放 `src/core`，只能是純函式，不可碰畫面、檔案、網路。

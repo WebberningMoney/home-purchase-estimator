@@ -35,11 +35,12 @@ button, input, select { font: inherit; color: inherit; }
 /* ===== 上方工具列 ===== */
 .toolbar {
   display: flex; align-items: center; gap: 16px;
-  padding: 10px 20px 10px 84px; /* 左邊留給 macOS 的紅黃綠按鈕 */
+  height: 52px; padding: 0 20px 0 92px; /* 左邊留給 macOS 的紅黃綠按鈕，高度要和按鈕位置對齊 */
   background: var(--card); border-bottom: 1px solid var(--line);
 }
-.brand { font-weight: 700; font-size: 15px; letter-spacing: 0.04em; }
-.brand, .notice { pointer-events: none; } /* 讓文字不擋住拖動視窗 */
+.brand { font-weight: 700; font-size: 16px; letter-spacing: 0.08em; }
+.tagline { color: var(--ink-soft); font-size: 12px; }
+.brand, .tagline, .notice { pointer-events: none; } /* 讓文字不擋住拖動視窗 */
 .notice { flex: 1; color: var(--tone-good); font-size: 13px; }
 .toolbar-actions { display: flex; gap: 8px; }
 
@@ -194,3 +195,58 @@ button, input, select { font: inherit; color: inherit; }
 
 /* 收合區塊直接放在左欄時，也做成卡片 */
 .inputs > .section { margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; }
+
+/* ===== 賣舊屋開關、資產卡片 ===== */
+.section-action { margin-left: 12px; }
+fieldset.section-body { border: 0; margin: 0; min-width: 0; padding: 8px 0 0; transition: opacity 0.2s; }
+fieldset.section-body:disabled { opacity: 0.4; filter: grayscale(1); }
+
+.asset-overview { margin: 4px 0 8px; }
+.asset-bar { height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; }
+.asset-bar-use { display: block; height: 100%; background: var(--tone-good); transition: width 0.2s; }
+.asset-legend { display: flex; justify-content: space-between; gap: 12px; margin-top: 6px; font-size: 12px; color: var(--ink-soft); }
+.asset-legend b { color: var(--ink); font-weight: 600; margin-left: 4px; }
+.asset-legend .dot { margin: 0 6px 0 0; }
+.dot.use { background: var(--tone-good); }
+.dot.keep { background: var(--line); }
+
+.asset-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.asset-card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: #fbfcfd; transition: border-color 0.2s, background 0.2s; }
+.asset-card.on { border-color: var(--tone-good); background: #f4fbf8; }
+.asset-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.asset-name { font-weight: 600; }
+.asset-amount { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.asset-card .slider-field { margin: 10px 0 0; }
+.asset-card .slider-label { font-size: 12px; color: var(--ink-soft); font-weight: 500; }
+.asset-card .slider-number input { width: 56px; font-size: 14px; }
+
+/* ===== 最多買得起 ===== */
+.capacity { background: var(--board-card); border: 1px solid var(--board-line); border-radius: 16px; padding: 20px 24px; }
+.capacity-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.capacity-head h2 { font-size: 16px; }
+.capacity .hint { color: var(--board-dim); }
+.capacity-main { margin-top: 8px; }
+.capacity-price { display: block; font-family: var(--number-font); font-size: 40px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.capacity-main p { margin-top: 2px; }
+.gauge { margin: 14px 0 4px; }
+.gauge-track { position: relative; height: 10px; border-radius: 5px; background: var(--board); border: 1px solid var(--board-line); }
+.gauge-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: var(--tone-good); opacity: 0.85; }
+.gauge-want { position: absolute; top: -5px; width: 3px; height: 18px; margin-left: -1px; border-radius: 2px; background: var(--board-text); }
+.gauge-want.over { background: var(--tone-bad); }
+.gauge-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--board-dim); margin-top: 6px; }
+.criteria { list-style: none; margin: 16px 0 6px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.criteria li { display: grid; grid-template-columns: 22px 1fr auto; gap: 4px 10px; align-items: baseline; }
+.criteria .mark { font-weight: 700; text-align: center; }
+.criteria .ok .mark { color: var(--tone-good); }
+.criteria .no .mark { color: var(--tone-bad); }
+.criteria .info .mark { color: var(--board-dim); }
+.criteria-note { color: var(--board-dim); font-size: 12px; text-align: right; }
+.criteria .no .criteria-note { color: var(--tone-bad); }
+.snapshot { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--board-line); }
+.snapshot dt { color: var(--board-dim); font-size: 12px; }
+.snapshot dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* 標題列塞了開關時，文字不要被擠成直排 */
+.section > summary { align-items: center; }
+.section-title, .toggle-text { white-space: nowrap; }
+.section-summary { text-align: right; flex-shrink: 1; min-width: 0; }

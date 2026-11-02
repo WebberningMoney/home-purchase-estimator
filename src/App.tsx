@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
-import { evaluate } from './core'
+import { evaluate, findMaxAffordable } from './core'
 import type { Scenario } from './core'
 import { AssetsPanel } from './components/AssetsPanel'
 import { BuyerPanel, LTV_RANGE, PRICE_RANGE, RATE_RANGE } from './components/BuyerPanel'
+import { Capacity } from './components/Capacity'
 import { CashChart } from './components/CashChart'
 import { HouseholdPanel } from './components/HouseholdPanel'
 import { KeyFigures } from './components/KeyFigures'
@@ -35,6 +36,8 @@ export function App() {
   const today = useMemo(() => new Date(), [])
 
   const evaluation = useMemo(() => evaluate(scenario, today), [scenario, today])
+
+  const maxAffordable = useMemo(() => findMaxAffordable(scenario, today), [scenario, today])
 
   const priceTones = useSweep(scenario, today, PRICE_RANGE, (d, v) => void (d.buyer.price = v))
   const rateTones = useSweep(scenario, today, RATE_RANGE, (d, v) => void (d.buyer.annualRate = v))
@@ -72,7 +75,8 @@ export function App() {
   return (
     <div className="app">
       <header className="toolbar" data-tauri-drag-region>
-        <span className="brand">換屋試算</span>
+        <span className="brand">換屋底氣</span>
+        <span className="tagline">買得起，也撐得住</span>
         <span className="notice" role="status">
           {notice}
         </span>
@@ -106,7 +110,8 @@ export function App() {
         </div>
 
         <div className="board">
-          <Verdict scenario={scenario} evaluation={evaluation} />
+          <Verdict scenario={scenario} evaluation={evaluation} max={maxAffordable} />
+          <Capacity scenario={scenario} evaluation={evaluation} max={maxAffordable} />
           <CashChart scenario={scenario} evaluation={evaluation} />
           <KeyFigures scenario={scenario} evaluation={evaluation} />
         </div>

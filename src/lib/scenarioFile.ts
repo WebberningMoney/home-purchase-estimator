@@ -30,7 +30,7 @@ export function parseScenario(text: string): Scenario {
     throw new Error('這個檔案不是有效的 JSON，打不開')
   }
   if (!isRecord(raw) || raw.app !== APP_ID || !isRecord(raw.scenario)) {
-    throw new Error('這不是「換屋試算」存的檔案')
+    throw new Error('這不是「換屋底氣」存的檔案')
   }
   const base = createDefaultScenario()
   const saved = raw.scenario as Partial<Scenario>

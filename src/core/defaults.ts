@@ -65,6 +65,7 @@ export function createDefaultScenario(): Scenario {
       },
     ],
     seller: {
+      enabled: true,
       unitPrice: 650_000,
       ping: 25,
       feeRate: 0.04,
