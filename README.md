@@ -37,7 +37,8 @@ Home Purchase Estimator
 2. 在檔案上按右鍵 →「全部解壓縮」，放在你想放的地方（例如桌面）。
 3. 雙擊裡面的 `HomePurchaseEstimator.exe`。
 4. 第一次開啟會跳出藍色的「Windows 已保護您的電腦」，因為沒有向 Microsoft 付費簽署。按「**其他資訊**」→「**仍要執行**」即可，之後不會再問。
-5. 如果打不開，或一閃就消失：電腦缺少 WebView2（Windows 11 和較新的 Windows 10 都已內建）。到 <https://developer.microsoft.com/microsoft-edge/webview2/> 下載「Evergreen 啟動程式」安裝，再重新開啟。
+5. 如果跳出「**智慧型應用程式控制已封鎖可能不安全的應用程式**」，而且沒有「仍要執行」可按：這是 Windows 11 的安全功能，只放行有數位簽章的程式，而這個程式沒有簽章。到「設定 → 隱私權與安全性 → Windows 安全性 → 應用程式與瀏覽器控制 → 智慧型應用程式控制設定」選「關閉」即可。注意：在多數 Windows 11 版本，關閉後無法再開回來，請自行斟酌。
+6. 如果打不開，或一閃就消失：電腦缺少 WebView2（Windows 11 和較新的 Windows 10 都已內建）。到 <https://developer.microsoft.com/microsoft-edge/webview2/> 下載「Evergreen 啟動程式」安裝，再重新開啟。
 
 要刪除的話，把解壓縮出來的資料夾刪掉就好。你填的數字不會存在這個資料夾裡：平常自動記住的內容放在系統的使用者資料區，「儲存檔案」存出來的檔案則放在你選的位置。換電腦時，用「儲存檔案」帶走最方便。
 
