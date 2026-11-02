@@ -261,3 +261,11 @@ fieldset.section-body:disabled { opacity: 0.4; filter: grayscale(1); }
 .chart-stats dd { margin: 0; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .tagline { font-size: 11px; letter-spacing: 0.02em; }
 @media (max-width: 1100px) { .capacity-body { grid-template-columns: 1fr; } }
+
+/* 賣屋後實拿現金的算式 */
+.waterfall { margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; background: #f6f8fb; border: 1px solid var(--line); }
+.waterfall > div { display: flex; justify-content: space-between; padding: 2px 0; font-size: 13px; }
+.waterfall dt { color: var(--ink-soft); }
+.waterfall dd { margin: 0; font-variant-numeric: tabular-nums; }
+.waterfall .total { margin-top: 4px; padding-top: 6px; border-top: 1px solid var(--line); font-weight: 700; }
+.waterfall .total dt { color: var(--ink); }

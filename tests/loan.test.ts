@@ -27,11 +27,11 @@ describe('月繳金', () => {
   })
 
   it('跟試算表的信貸 2 一致：300 萬、3%、10 年 ＝ 28,968', () => {
-    expect(Math.round(evaluateLoan(baseLoan, new Date(2026, 9, 30)).monthly)).toBe(28_968)
+    expect(Math.round(evaluateLoan(baseLoan, new Date(2026, 9, 30), false).monthly)).toBe(28_968)
   })
 
   it('手動填的月繳金會蓋過自動計算', () => {
-    const result = evaluateLoan({ ...baseLoan, monthlyOverride: 30_000 }, new Date(2026, 9, 30))
+    const result = evaluateLoan({ ...baseLoan, monthlyOverride: 30_000 }, new Date(2026, 9, 30), false)
     expect(result.monthly).toBe(30_000)
   })
 })
@@ -44,11 +44,11 @@ describe('剩餘月數', () => {
   })
 
   it('10 年期的信貸 2 還剩 115 個月（跟試算表一致）', () => {
-    expect(evaluateLoan(baseLoan, new Date(2026, 9, 30)).remainingMonths).toBe(115)
+    expect(evaluateLoan(baseLoan, new Date(2026, 9, 30), false).remainingMonths).toBe(115)
   })
 
   it('沒有起始日就用剩餘本金與月繳金推算', () => {
-    const result = evaluateLoan({ ...baseLoan, startDate: null, monthlyOverride: 28_968 }, new Date(2026, 9, 30))
+    const result = evaluateLoan({ ...baseLoan, startDate: null, monthlyOverride: 28_968 }, new Date(2026, 9, 30), false)
     expect(result.remainingMonths).toBeGreaterThan(110)
     expect(result.remainingMonths).toBeLessThan(120)
   })
@@ -57,6 +57,7 @@ describe('剩餘月數', () => {
     const result = evaluateLoan(
       { ...baseLoan, startDate: null, monthlyOverride: 1_000, remainingPrincipal: 5_000_000 },
       new Date(2026, 9, 30),
+      false,
     )
     expect(result.remainingMonths).toBeNull()
   })
@@ -64,15 +65,12 @@ describe('剩餘月數', () => {
 
 describe('賣房後結清', () => {
   it('結清要出本金加違約金', () => {
-    const result = evaluateLoan(
-      { ...baseLoan, settleOnSale: true, penaltyRate: 0.01 },
-      new Date(2026, 9, 30),
-    )
+    const result = evaluateLoan({ ...baseLoan, penaltyRate: 0.01 }, new Date(2026, 9, 30), true)
     expect(result.payoffCash).toBeCloseTo(2_892_349 * 1.01, 2)
   })
 
   it('不結清就不用出現金', () => {
-    expect(evaluateLoan(baseLoan, new Date(2026, 9, 30)).payoffCash).toBe(0)
+    expect(evaluateLoan(baseLoan, new Date(2026, 9, 30), false).payoffCash).toBe(0)
   })
 })
 

@@ -12,6 +12,6 @@ export const ASSET_LABEL: Record<Asset['key'], string> = {
 }
 
 export const LOAN_KIND_LABEL: Record<LoanKind, string> = {
-  mortgage: '房貸',
-  personal: '信貸',
+  mortgage: '舊屋房貸',
+  personal: '信貸／其他',
 }
