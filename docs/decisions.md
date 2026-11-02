@@ -22,4 +22,5 @@
 
 ## 名稱
 - 中文「購屋財務評估」，英文 Home Purchase Estimator。既能評估賣舊屋再買新屋（換屋），也能評估第一次買房或加買一間。
-- 專案資料夾、GitHub 倉庫與存檔識別碼仍用 `home-swap-estimator`（早期名稱），改名不影響使用。
+- 專案與 GitHub 倉庫名稱：`home-purchase-estimator-macos`（先做 macOS，之後再做 Windows）。
+- 改名前（`home-swap-estimator`）存的檔案仍然可以開啟。

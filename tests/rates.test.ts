@@ -24,10 +24,15 @@ describe('存檔與載入', () => {
   })
 
   it('缺少欄位時用範例補上', () => {
-    const text = JSON.stringify({ app: 'home-swap-estimator', version: 1, scenario: { buyer: { price: 1 } } })
+    const text = JSON.stringify({ app: 'home-purchase-estimator', version: 1, scenario: { buyer: { price: 1 } } })
     const loaded = parseScenario(text)
     expect(loaded.buyer.price).toBe(1)
     expect(loaded.buyer.ltv).toBe(createDefaultScenario().buyer.ltv)
+  })
+
+  it('改名前存的檔案也讀得進來', () => {
+    const text = JSON.stringify({ app: 'home-swap-estimator', version: 1, scenario: { buyer: { price: 5 } } })
+    expect(parseScenario(text).buyer.price).toBe(5)
   })
 
   it('不是這個 App 存的檔案會擋下來', () => {

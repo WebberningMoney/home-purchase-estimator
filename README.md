@@ -41,8 +41,8 @@ Home Purchase Estimator
 2. 把專案下載到桌面：
    ```
    cd ~/Desktop
-   git clone https://github.com/WebberningMoney/home-swap-estimator.git
-   cd home-swap-estimator
+   git clone https://github.com/WebberningMoney/home-purchase-estimator-macos.git
+   cd home-purchase-estimator-macos
    ```
 3. 下載需要的零件（約 1 分鐘）：
    ```
@@ -59,7 +59,7 @@ Home Purchase Estimator
 打開終端機，依序輸入（要先 `cd`，否則電腦不知道專案在哪）：
 
 ```
-cd ~/Desktop/home-swap-estimator
+cd ~/Desktop/home-purchase-estimator-macos
 npm run tauri dev
 ```
 
@@ -78,7 +78,7 @@ npm run tauri build
 | 看到的訊息 | 原因與做法 |
 |---|---|
 | `command not found: npm`、`node`、`rustc` | 工具沒裝，或裝完沒有把終端機關掉重開 |
-| `Could not read package.json` | 沒有先 `cd ~/Desktop/home-swap-estimator` |
+| `Could not read package.json` | 沒有先 `cd ~/Desktop/home-purchase-estimator-macos` |
 | 一堆 `EBADENGINE` 警告，或 `Cannot find native binding` | Node.js 版本太舊，請升級到 22 以上 |
 | `Port 1420 is already in use` | 上一次的程式還開著，在它的終端機按 `Ctrl + C` 關掉 |
 

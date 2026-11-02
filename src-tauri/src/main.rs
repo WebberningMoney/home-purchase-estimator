@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    home_swap_estimator_lib::run()
+    home_purchase_estimator_lib::run()
 }
