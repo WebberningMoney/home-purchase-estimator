@@ -21,8 +21,8 @@ export function evaluate(scenario: Scenario, today: Date = new Date()): Evaluati
     .map((loan, index) => ({ loan, result: loanResults[index] }))
     .filter(({ result }) => !result.settled)
   const retainedMonthly = keptLoans.reduce((sum, { result }) => sum + result.monthly, 0)
-  const retainedPrincipal = keptLoans.reduce((sum, { loan }) => sum + loan.remainingPrincipal, 0)
-  const totalPrincipal = loans.reduce((sum, loan) => sum + loan.remainingPrincipal, 0)
+  const retainedPrincipal = keptLoans.reduce((sum, { result }) => sum + result.principal, 0)
+  const totalPrincipal = loanResults.reduce((sum, result) => sum + result.principal, 0)
   const hasRetained = retainedPrincipal > 0
 
   // 賣舊屋
