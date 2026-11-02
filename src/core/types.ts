@@ -67,11 +67,9 @@ export interface Household {
   yearlySavings: number
   /** 購屋後至少保留幾個月生活費 */
   reserveMonths: number
-  /** 壓力測試：標「假設中斷」的收入消失幾個月 */
-  interruptMonths: number
-  /** 現金可撐月數低於它＝高風險 */
+  /** 現金可撐月數低於它＝高風險；達到它就是中風險 */
   warnMonths: number
-  /** 現金可撐月數高於它＝低風險 */
+  /** 現金可撐月數達到它＝低風險 */
   safeMonths: number
 }
 
@@ -118,7 +116,8 @@ export interface Scenario {
 export type Verdict = '可行' | '有條件可行' | '不可行'
 export type CashCheck = '通過' | '不足'
 export type AnnualCheck = '通過' | '儲蓄不足' | '耗用現金' | '超出預算'
-export type RunwayRating = '不耗用現金' | '低風險' | '需留意' | '高風險'
+/** 風險等級：none＝不耗用現金（無風險）；其餘三級都要動用現金，差在現金能撐多久 */
+export type RiskLevel = 'none' | 'low' | 'medium' | 'high'
 
 /** 逐月推演的一列 */
 export interface MonthRow {
@@ -158,7 +157,7 @@ export interface Runway {
   burnsCash: boolean
   /** 現金可撐幾個月；null＝撐過整個推演期間 */
   months: number | null
-  rating: RunwayRating
+  rating: RiskLevel
   /** 第幾個月起每月收支轉正；null＝推演期間內都沒有 */
   firstPositiveMonth: number | null
   /** 推演期間累計現金的最低點 */
@@ -173,7 +172,8 @@ export interface StressTest {
   monthlyGap: number
   /** 購後現金能撐幾個月；null＝缺口為 0，不受影響 */
   months: number | null
-  passed: boolean
+  /** 用同一套門檻評的風險等級；high 就是沒通過 */
+  rating: RiskLevel
 }
 
 export interface Evaluation {

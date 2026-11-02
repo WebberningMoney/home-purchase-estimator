@@ -1,18 +1,18 @@
-import { describe } from '../core'
-import type { Evaluation, MaxAffordable, Scenario } from '../core'
+import { RISK_NAME, describe, riskLevel } from '../core'
+import type { Evaluation, PriceLimits, Scenario } from '../core'
 import { fmtBig, fmtPercent } from '../lib/format'
 import { toneOf } from '../lib/zones'
 
 interface Props {
   scenario: Scenario
   evaluation: Evaluation
-  max: MaxAffordable
+  limits: PriceLimits
 }
 
 /** 右邊最上面的大結論：一眼看出買不買得起 */
-export function Verdict({ scenario, evaluation, max }: Props) {
+export function Verdict({ scenario, evaluation, limits }: Props) {
   const tone = toneOf(evaluation)
-  const text = describe(evaluation, scenario, max)
+  const text = describe(evaluation, scenario, limits)
   const { buyer } = scenario
 
   return (
@@ -31,9 +31,9 @@ export function Verdict({ scenario, evaluation, max }: Props) {
           <span>每年還款</span>
           <b>{evaluation.annualCheck === '通過' ? '在預算內' : evaluation.annualCheck}</b>
         </li>
-        <li className={evaluation.runway.rating === '高風險' ? 'no' : evaluation.runway.rating === '需留意' ? 'mid' : 'ok'}>
-          <span>存款續航</span>
-          <b>{evaluation.runway.rating}</b>
+        <li className={`risk-${riskLevel(evaluation)}`}>
+          <span>風險等級</span>
+          <b>{RISK_NAME[riskLevel(evaluation)]}</b>
         </li>
       </ul>
     </section>

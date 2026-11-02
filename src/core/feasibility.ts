@@ -1,5 +1,5 @@
 import { assetValue, usableValue } from './assets'
-import { HORIZON_MONTHS, simulate, summarizeRunway } from './cashflow'
+import { HORIZON_MONTHS, rateRunway, simulate, summarizeRunway } from './cashflow'
 import { evaluateLoan, pmt } from './loan'
 import { capitalGainsTax, salePrice } from './tax'
 import type { AnnualCheck, Evaluation, Scenario, StressTest, Verdict } from './types'
@@ -98,12 +98,13 @@ export function evaluate(scenario: Scenario, today: Date = new Date()): Evaluati
   const stressIncome = (annualIncome - interrupted) / 12
   const stressExpense = annualLiving / 12 + annualPayment / 12
   const stressGap = Math.max(0, stressExpense - stressIncome)
+  const stressMonths = stressGap === 0 ? null : remainingCash / stressGap
   const stress: StressTest = {
     monthlyIncome: stressIncome,
     monthlyExpense: stressExpense,
     monthlyGap: stressGap,
-    months: stressGap === 0 ? null : remainingCash / stressGap,
-    passed: stressGap === 0 || remainingCash / stressGap >= household.interruptMonths,
+    months: stressMonths,
+    rating: rateRunway(stressMonths, stressGap > 0, household.warnMonths, household.safeMonths),
   }
 
   return {

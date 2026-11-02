@@ -1,4 +1,4 @@
-import type { MonthRow, Runway, RunwayRating } from './types'
+import type { MonthRow, Runway, RiskLevel } from './types'
 
 /** 一年的推演最多看幾個月：40 年 */
 export const HORIZON_MONTHS = 480
@@ -46,11 +46,11 @@ export function simulate(input: SimulationInput): MonthRow[] {
   return rows
 }
 
-export function rateRunway(months: number | null, burnsCash: boolean, warn: number, safe: number): RunwayRating {
-  if (!burnsCash) return '不耗用現金'
-  if (months === null || months >= safe) return '低風險'
-  if (months >= warn) return '需留意'
-  return '高風險'
+export function rateRunway(months: number | null, burnsCash: boolean, warn: number, safe: number): RiskLevel {
+  if (!burnsCash) return 'none'
+  if (months === null || months >= safe) return 'low'
+  if (months >= warn) return 'medium'
+  return 'high'
 }
 
 /** 從逐月推演整理出：現金可撐多久、何時轉正、最低點 */

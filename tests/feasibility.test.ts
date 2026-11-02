@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { createDefaultScenario, evaluate, findMaxAffordable, isAffordable } from '../src/core'
+import type { Scenario } from '../src/core'
+import { createDefaultScenario, evaluate, findPriceLimits, isWithinRisk, riskLevel } from '../src/core'
 import { createSellingScenario } from './helpers'
 import { toneOf } from '../src/lib/zones'
 
 const today = new Date('2026-10-30')
+const evaluateAt = (scenario: Scenario, price: number) => {
+  const draft = structuredClone(scenario)
+  draft.buyer.price = price
+  return evaluate(draft, today)
+}
 const near = (actual: number, expected: number, tolerance = 1) => expect(Math.abs(actual - expected)).toBeLessThan(tolerance)
 
 describe('範例資料的結論', () => {
@@ -31,15 +37,10 @@ describe('範例資料的結論', () => {
 describe('最多買得起的房價', () => {
   it('上限以內買得起，超過一點就不行', () => {
     const scenario = createSellingScenario()
-    const { price } = findMaxAffordable(scenario, today)
-    const at = (value: number) => {
-      const draft = structuredClone(scenario)
-      draft.buyer.price = value
-      return isAffordable(evaluate(draft, today))
-    }
-    expect(price).toBeGreaterThan(0)
-    expect(at(price)).toBe(true)
-    expect(at(price + 200_000)).toBe(false)
+    const { lowRisk } = findPriceLimits(scenario, today)
+    expect(lowRisk).toBeGreaterThan(0)
+    expect(isWithinRisk(evaluateAt(scenario, lowRisk), 'low')).toBe(true)
+    expect(isWithinRisk(evaluateAt(scenario, lowRisk + 200_000), 'low')).toBe(false)
   })
 
   it('不賣舊屋時，賣屋收入不計、貸款全部留著', () => {
@@ -74,7 +75,7 @@ describe('對照獨立重算（範例資料、2026-10-30）', () => {
 
   it('最多買得起：3,790 萬，上限那天存款撐 36 個月、再貴 20 萬就掉到 32 個月', () => {
     const scenario = createSellingScenario()
-    expect(findMaxAffordable(scenario, today)).toEqual({ price: 37_900_000, limitedBy: '存款續航', savingsGoalPrice: 12_700_000 })
+    expect(findPriceLimits(scenario, today)).toEqual({ noRisk: 12_700_000, lowRisk: 37_900_000, mediumRisk: 41_000_000, limitedBy: '存款續航' })
     const runwayAt = (price: number) => {
       const draft = structuredClone(scenario)
       draft.buyer.price = price
@@ -90,7 +91,7 @@ describe('對照獨立重算（範例資料、2026-10-30）', () => {
     const result = evaluate(scenario, today)
     near(result.availableCash, 7_800_000)
     near(result.cashAfterReserve, -4_896_250)
-    expect(isAffordable(result)).toBe(false)
+    expect(riskLevel(result)).toBe('high')
   })
 })
 
@@ -108,34 +109,32 @@ describe('每年想存的金額', () => {
     expect(at(12_900_000).annualCheck).not.toBe('通過')
   })
 
-  it('想存得越多，達標的房價上限就越低', () => {
+  it('想存得越多，無風險的房價上限就越低', () => {
     const modest = createSellingScenario()
     const ambitious = createSellingScenario()
     ambitious.household.yearlySavings = 600_000
-    expect(findMaxAffordable(ambitious, today).savingsGoalPrice).toBeLessThan(findMaxAffordable(modest, today).savingsGoalPrice)
+    expect(findPriceLimits(ambitious, today).noRisk).toBeLessThan(findPriceLimits(modest, today).noRisk)
   })
 
-  it('達標的房價，一定也「買得起」', () => {
-    const scenario = createSellingScenario()
-    const { price, savingsGoalPrice } = findMaxAffordable(scenario, today)
-    expect(savingsGoalPrice).toBeLessThanOrEqual(price)
+  it('三條界線由低到高：無風險 ≤ 低風險 ≤ 中風險', () => {
+    const { noRisk, lowRisk, mediumRisk } = findPriceLimits(createSellingScenario(), today)
+    expect(noRisk).toBeLessThanOrEqual(lowRisk)
+    expect(lowRisk).toBeLessThanOrEqual(mediumRisk)
   })
 })
 
 describe('一致性：同一套標準', () => {
-  it('拉桿綠藍區 ⇔ 房價在「最多買得起」以內', () => {
+  it('拉桿顏色 ⇔ 房價落在哪一條界線之內', () => {
     const scenario = createSellingScenario()
-    const { price: limit } = findMaxAffordable(scenario, today)
+    const { noRisk, lowRisk, mediumRisk } = findPriceLimits(scenario, today)
     for (let price = 5_000_000; price <= 100_000_000; price += 700_000) {
-      const draft = structuredClone(scenario)
-      draft.buyer.price = price
-      const result = evaluate(draft, today)
-      const greenOrBlue = toneOf(result) === 'good' || toneOf(result) === 'steady'
-      expect(greenOrBlue, `房價 ${price}`).toBe(price <= limit)
+      const tone = toneOf(evaluateAt(scenario, price))
+      const expected = price <= noRisk ? 'good' : price <= lowRisk ? 'steady' : price <= mediumRisk ? 'watch' : 'bad'
+      expect(tone, `房價 ${price}`).toBe(expected)
     }
   })
 
-  it('不同的利率、成數、預備金下，上限都剛好是分界', () => {
+  it('不同的利率、成數、預備金下，每條界線都剛好是分界', () => {
     const cases = [
       { rate: 0.01, ltv: 0.5, reserve: 3 },
       { rate: 0.06, ltv: 0.8, reserve: 12 },
@@ -146,15 +145,52 @@ describe('一致性：同一套標準', () => {
       scenario.buyer.annualRate = c.rate
       scenario.buyer.ltv = c.ltv
       scenario.household.reserveMonths = c.reserve
-      const { price } = findMaxAffordable(scenario, today)
-      const at = (value: number) => {
-        const draft = structuredClone(scenario)
-        draft.buyer.price = value
-        return isAffordable(evaluate(draft, today))
+      const limits = findPriceLimits(scenario, today)
+      const boundaries = [
+        ['none', limits.noRisk],
+        ['low', limits.lowRisk],
+        ['medium', limits.mediumRisk],
+      ] as const
+      for (const [level, price] of boundaries) {
+        if (price > 0) expect(isWithinRisk(evaluateAt(scenario, price), level), JSON.stringify([c, level])).toBe(true)
+        expect(isWithinRisk(evaluateAt(scenario, price + 200_000), level), JSON.stringify([c, level])).toBe(false)
       }
-      if (price > 0) expect(at(price), JSON.stringify(c)).toBe(true)
-      expect(at(price + 200_000), JSON.stringify(c)).toBe(false)
     }
+  })
+})
+
+describe('風險等級', () => {
+  it('收入付得起貸款、但存不到預計存款：低風險，且不耗用現金', () => {
+    const scenario = createSellingScenario()
+    scenario.household.yearlySavings = 5_000_000
+    scenario.buyer.price = 5_000_000
+    const result = evaluate(scenario, today)
+    expect(result.runway.burnsCash).toBe(false)
+    expect(result.annualCheck).toBe('儲蓄不足')
+    expect(riskLevel(result)).toBe('low')
+  })
+
+  it('不耗用現金、也存得到預計存款：無風險', () => {
+    const scenario = createSellingScenario()
+    scenario.household.yearlySavings = 0
+    scenario.buyer.price = 5_000_000
+    expect(riskLevel(evaluate(scenario, today))).toBe('none')
+  })
+
+  it('買房現金不足：高風險', () => {
+    const scenario = createSellingScenario()
+    scenario.buyer.price = 90_000_000
+    expect(riskLevel(evaluate(scenario, today))).toBe('high')
+  })
+
+  it('標記的收入中斷，用同一套月數門檻評等級', () => {
+    const scenario = createSellingScenario()
+    scenario.buyer.price = 15_000_000
+    const { stress } = evaluate(scenario, today)
+    expect(stress.months).not.toBeNull()
+    const months = stress.months as number
+    const { warnMonths, safeMonths } = scenario.household
+    expect(stress.rating).toBe(months >= safeMonths ? 'low' : months >= warnMonths ? 'medium' : 'high')
   })
 })
 
@@ -202,11 +238,12 @@ describe('預設範例：買新屋', () => {
     expect(result.verdict).toBe('不可行')
   })
 
-  it('最多買得起 1,890 萬；要同時存下每年目標則是 1,060 萬', () => {
-    expect(findMaxAffordable(scenario, today)).toEqual({
-      price: 18_900_000,
+  it('無風險 1,060 萬、低風險 1,890 萬、中風險 1,980 萬', () => {
+    expect(findPriceLimits(scenario, today)).toEqual({
+      noRisk: 10_600_000,
+      lowRisk: 18_900_000,
+      mediumRisk: 19_800_000,
       limitedBy: '存款續航',
-      savingsGoalPrice: 10_600_000,
     })
   })
 

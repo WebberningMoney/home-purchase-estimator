@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { evaluate, findMaxAffordable } from './core'
+import { evaluate, findPriceLimits } from './core'
 import type { Scenario } from './core'
 import { AssetsPanel } from './components/AssetsPanel'
 import { BuyerPanel, LTV_RANGE, PRICE_RANGE, RATE_RANGE } from './components/BuyerPanel'
@@ -37,7 +37,7 @@ export function App() {
 
   const evaluation = useMemo(() => evaluate(scenario, today), [scenario, today])
 
-  const maxAffordable = useMemo(() => findMaxAffordable(scenario, today), [scenario, today])
+  const priceLimits = useMemo(() => findPriceLimits(scenario, today), [scenario, today])
 
   const priceTones = useSweep(scenario, today, PRICE_RANGE, (d, v) => void (d.buyer.price = v))
   const rateTones = useSweep(scenario, today, RATE_RANGE, (d, v) => void (d.buyer.annualRate = v))
@@ -110,8 +110,8 @@ export function App() {
         </div>
 
         <div className="board">
-          <Verdict scenario={scenario} evaluation={evaluation} max={maxAffordable} />
-          <Capacity scenario={scenario} evaluation={evaluation} max={maxAffordable} />
+          <Verdict scenario={scenario} evaluation={evaluation} limits={priceLimits} />
+          <Capacity scenario={scenario} evaluation={evaluation} limits={priceLimits} />
           <CashChart scenario={scenario} evaluation={evaluation} />
           <KeyFigures scenario={scenario} evaluation={evaluation} />
         </div>

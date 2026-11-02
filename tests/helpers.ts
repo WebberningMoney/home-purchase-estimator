@@ -12,8 +12,7 @@ export function createSellingScenario(): Scenario {
       dailyExpense: 2_500,
       yearlySavings: 300_000,
       reserveMonths: 6,
-      interruptMonths: 12,
-      warnMonths: 18,
+      warnMonths: 12,
       safeMonths: 36,
     },
     assets: [

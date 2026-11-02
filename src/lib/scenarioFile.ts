@@ -43,13 +43,19 @@ export function parseScenario(text: string): Scenario {
   const base = createDefaultScenario()
   const saved = raw.scenario as Partial<Scenario>
   return {
-    household: { ...base.household, ...saved.household },
+    household: knownFieldsOnly(base.household, saved.household),
     assets: Array.isArray(saved.assets) ? saved.assets : base.assets,
     rates: { ...base.rates, ...saved.rates },
     loans: Array.isArray(saved.loans) ? saved.loans.map(upgradeLoan) : base.loans,
     seller: { ...base.seller, ...saved.seller },
     buyer: { ...base.buyer, ...saved.buyer },
   }
+}
+
+/** 舊版存檔多出來的欄位（例如已取消的「收入中斷月數」）丟掉，免得一直帶著 */
+function knownFieldsOnly<T extends object>(base: T, saved: Partial<T> | undefined): T {
+  const merged = { ...base, ...saved }
+  return Object.fromEntries(Object.keys(base).map((key) => [key, merged[key as keyof T]])) as T
 }
 
 /** 啟動時還原上次的內容；沒有或壞掉就用範例 */
