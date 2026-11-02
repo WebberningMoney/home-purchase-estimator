@@ -80,7 +80,7 @@ export function KeyFigures({ scenario, evaluation: e }: Props) {
         {fmtMoney(first.retained)} ＝ <b className={first.net < 0 ? 'neg' : 'pos'}>{first.net >= 0 ? '+' : '−'}{fmtMoney(Math.abs(first.net))}</b>
       </p>
       <p className="flow-line">
-        淨資產：換屋前 {fmtBig(e.netWorthBefore)}，換屋後約 {fmtBig(e.netWorthAfter)}（差額是手續費、裝潢等一次性花費）
+        淨資產：買房前 {fmtBig(e.netWorthBefore)}，買房後約 {fmtBig(e.netWorthAfter)}（差額是手續費、裝潢等一次性花費）
       </p>
     </section>
   )

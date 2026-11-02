@@ -1,7 +1,7 @@
 [package]
 name = "home-swap-estimator"
 version = "1.0.0"
-description = "換屋財務評估"
+description = "購屋財務評估"
 edition = "2021"
 
 [lib]

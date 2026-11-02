@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "換屋財務評估",
+  "productName": "購屋財務評估",
   "version": "1.0.0",
   "identifier": "app.homeswap.estimator",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "換屋財務評估",
+        "title": "購屋財務評估",
         "width": 1280,
         "height": 820,
         "maximized": true,

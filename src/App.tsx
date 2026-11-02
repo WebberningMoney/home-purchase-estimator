@@ -75,8 +75,8 @@ export function App() {
   return (
     <div className="app">
       <header className="toolbar" data-tauri-drag-region>
-        <span className="brand">換屋財務評估</span>
-        <span className="tagline">Home Swap Estimator</span>
+        <span className="brand">購屋財務評估</span>
+        <span className="tagline">Home Purchase Estimator</span>
         <span className="notice" role="status">
           {notice}
         </span>

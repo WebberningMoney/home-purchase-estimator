@@ -37,7 +37,7 @@ export function LoansPanel({ scenario, evaluation, onChange }: Props) {
   return (
     <Section
       title="現有貸款"
-      summary={`剩 ${fmtBig(evaluation.debtTotal)}，賣房後要還 ${fmtBig(evaluation.payoffTotal)}`}
+      summary={`剩 ${fmtBig(evaluation.debtTotal)}${scenario.seller.enabled ? `，賣房後要還 ${fmtBig(evaluation.payoffTotal)}` : ''}`}
     >
       <p className="hint block">
         填原始本金、起始日、年期、利率，剩餘本金、月繳金和剩餘月數都會自動算。利率有調整過，就在下面記一筆。欄位留白＝自動算，想用銀行給的實際數字，直接填進去。

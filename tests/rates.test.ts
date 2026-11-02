@@ -31,7 +31,7 @@ describe('存檔與載入', () => {
   })
 
   it('不是這個 App 存的檔案會擋下來', () => {
-    expect(() => parseScenario('{"hello":1}')).toThrow('不是「換屋財務評估」')
+    expect(() => parseScenario('{"hello":1}')).toThrow('不是「購屋財務評估」')
     expect(() => parseScenario('not json')).toThrow('JSON')
   })
 })
