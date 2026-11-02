@@ -60,9 +60,9 @@ describe('對照獨立重算（範例資料、2026-10-30）', () => {
     const result = evaluate(createDefaultScenario(), today)
     near(result.assetsTotal, 12_612_000)
     near(result.usableAssets, 7_800_000)
-    near(result.availableCash, 16_100_000)
-    near(result.remainingCash, 3_860_000)
-    near(result.cashAfterReserve, 3_403_750)
+    near(result.availableCash, 16_321_234.92, 0.01)
+    near(result.remainingCash, 4_081_234.92, 0.01)
+    near(result.cashAfterReserve, 3_624_984.92, 0.01)
   })
 
   it('每月房貸與每年還款', () => {
@@ -71,16 +71,16 @@ describe('對照獨立重算（範例資料、2026-10-30）', () => {
     near(result.annualPayment, 1_485_907.37, 0.01)
   })
 
-  it('最多買得起：3,730 萬，上限那天存款撐 37 個月、再貴 20 萬就掉到 34 個月', () => {
+  it('最多買得起：3,790 萬，上限那天存款撐 36 個月、再貴 20 萬就掉到 32 個月', () => {
     const scenario = createDefaultScenario()
-    expect(findMaxAffordable(scenario, today)).toEqual({ price: 37_300_000, limitedBy: '存款續航' })
+    expect(findMaxAffordable(scenario, today)).toEqual({ price: 37_900_000, limitedBy: '存款續航' })
     const runwayAt = (price: number) => {
       const draft = structuredClone(scenario)
       draft.buyer.price = price
       return evaluate(draft, today).runway.months
     }
-    expect(runwayAt(37_300_000)).toBe(37)
-    expect(runwayAt(37_500_000)).toBe(34)
+    expect(runwayAt(37_900_000)).toBe(36)
+    expect(runwayAt(38_100_000)).toBe(32)
   })
 
   it('不賣舊屋：可用現金只剩資產，買不起', () => {
@@ -135,7 +135,7 @@ describe('賣屋時的貸款', () => {
     scenario.loans[0].settleOnSale = false
     const result = evaluate(scenario, today)
     expect(result.loans[0].settled).toBe(true)
-    near(result.payoffTotal, 7_300_000)
+    near(result.payoffTotal, 7_078_765.08, 0.01)
   })
 
   it('信貸看使用者選擇：不選就留著繼續繳', () => {
@@ -143,12 +143,12 @@ describe('賣屋時的貸款', () => {
     const result = evaluate(scenario, today)
     expect(result.loans[1].settled).toBe(false)
     scenario.loans[1].settleOnSale = true
-    near(evaluate(scenario, today).payoffTotal, 8_300_000)
+    near(evaluate(scenario, today).payoffTotal, 7_078_765.08 + 827_905.53, 0.01)
   })
 
   it('賣屋實拿現金＝賣價 − 手續費 − 稅費 − 還清的貸款', () => {
     const result = evaluate(createDefaultScenario(), today)
-    near(result.saleNetCash, 16_250_000 - 650_000 - 7_300_000)
+    near(result.saleNetCash, 16_250_000 - 650_000 - 7_078_765.08, 0.01)
     near(result.availableCash, result.usableAssets + result.saleNetCash)
   })
 })

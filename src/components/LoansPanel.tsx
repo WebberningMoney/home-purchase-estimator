@@ -12,6 +12,9 @@ interface Props {
   onChange: (change: (draft: Scenario) => void) => void
 }
 
+/** 今天的日期，格式 YYYY-MM-DD，當成新利率調整的預設起始日 */
+const todayText = (): string => new Date().toISOString().slice(0, 10)
+
 let counter = 0
 const newLoan = (): Loan => ({
   id: `loan-${Date.now()}-${counter++}`,
@@ -21,7 +24,8 @@ const newLoan = (): Loan => ({
   startDate: null,
   termYears: 5,
   annualRate: 0.03,
-  remainingPrincipal: 0,
+  rateChanges: [],
+  remainingPrincipal: null,
   monthlyOverride: null,
   settleOnSale: false,
   penaltyRate: 0,
@@ -33,10 +37,10 @@ export function LoansPanel({ scenario, evaluation, onChange }: Props) {
   return (
     <Section
       title="現有貸款"
-      summary={`剩 ${fmtBig(loans.reduce((s, l) => s + l.remainingPrincipal, 0))}，賣房後要還 ${fmtBig(evaluation.payoffTotal)}`}
+      summary={`剩 ${fmtBig(evaluation.debtTotal)}，賣房後要還 ${fmtBig(evaluation.payoffTotal)}`}
     >
       <p className="hint block">
-        填原始本金、起始日、年期、利率，月繳金和剩餘月數會自動算。已知月繳金也可以直接填，會蓋過自動計算。
+        填原始本金、起始日、年期、利率，剩餘本金、月繳金和剩餘月數都會自動算。利率有調整過，就在下面記一筆。欄位留白＝自動算，想用銀行給的實際數字，直接填進去。
       </p>
       {loans.map((loan, index) => {
         const result = evaluation.loans[index]
@@ -102,7 +106,7 @@ export function LoansPanel({ scenario, evaluation, onChange }: Props) {
                 />
               </label>
               <label>
-                <span>利率（年）</span>
+                <span>起始利率（年）</span>
                 <NumberField
                   value={loan.annualRate}
                   onChange={(value) => onChange((d) => void (d.loans[index].annualRate = value))}
@@ -114,11 +118,11 @@ export function LoansPanel({ scenario, evaluation, onChange }: Props) {
                 />
               </label>
               <label>
-                <span>目前剩餘本金</span>
-                <NumberField
+                <span>目前剩餘本金（空白＝自動算）</span>
+                <OptionalNumberField
                   value={loan.remainingPrincipal}
                   onChange={(value) => onChange((d) => void (d.loans[index].remainingPrincipal = value))}
-                  min={0}
+                  placeholder={fmtMoney(result.autoPrincipal ?? 0)}
                   suffix="元"
                   label="剩餘本金"
                 />
@@ -133,6 +137,50 @@ export function LoansPanel({ scenario, evaluation, onChange }: Props) {
                   label="月繳金"
                 />
               </label>
+            </div>
+
+            <div className="rate-changes">
+              <span className="rate-changes-title">利率調整紀錄（目前利率 {(result.currentRate * 100).toFixed(2)}%）</span>
+              {loan.rateChanges.map((change, changeIndex) => (
+                <div className="rate-change-row" key={`${change.from}-${changeIndex}`}>
+                  <input
+                    type="date"
+                    className="text-input"
+                    aria-label="從哪天起"
+                    value={change.from}
+                    onChange={(event) =>
+                      onChange((d) => void (d.loans[index].rateChanges[changeIndex].from = event.target.value))
+                    }
+                  />
+                  <span className="hint">起改為</span>
+                  <NumberField
+                    value={change.annualRate}
+                    onChange={(value) => onChange((d) => void (d.loans[index].rateChanges[changeIndex].annualRate = value))}
+                    scale={100}
+                    decimals={2}
+                    min={0}
+                    suffix="%"
+                    label="調整後利率"
+                  />
+                  <button
+                    type="button"
+                    className="icon-button"
+                    aria-label="刪除這筆利率調整"
+                    onClick={() => onChange((d) => void d.loans[index].rateChanges.splice(changeIndex, 1))}
+                  >
+                    刪除
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                className="button"
+                onClick={() =>
+                  onChange((d) => void d.loans[index].rateChanges.push({ from: todayText(), annualRate: loan.annualRate }))
+                }
+              >
+                新增利率調整
+              </button>
             </div>
 
             <footer className="loan-foot">

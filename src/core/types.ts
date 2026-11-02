@@ -31,6 +31,13 @@ export interface Rates {
 /** 存檔用英文代碼，畫面上的中文名稱在 src/lib/labels.ts */
 export type LoanKind = 'mortgage' | 'personal'
 
+/** 從 from 這天起，利率改成 annualRate（浮動利率每次調整記一筆） */
+export interface RateChange {
+  /** YYYY-MM-DD */
+  from: string
+  annualRate: number
+}
+
 export interface Loan {
   id: string
   name: string
@@ -39,8 +46,11 @@ export interface Loan {
   /** 起始日，格式 YYYY-MM-DD；沒有就填 null */
   startDate: string | null
   termYears: number
+  /** 起始利率；之後調整過的記在 rateChanges */
   annualRate: number
-  remainingPrincipal: number
+  rateChanges: RateChange[]
+  /** 手動填的剩餘本金；null＝依起始日、利率與調整紀錄自動算 */
+  remainingPrincipal: number | null
   /** 已知月繳金時直接填，會蓋過自動計算；null＝自動算 */
   monthlyOverride: number | null
   /** 賣房後是否一次還清。只對信貸等其他貸款有意義；舊屋房貸賣屋時一定要還清，不看這個值 */
@@ -133,8 +143,12 @@ export interface LoanResult {
   /** 賣房後一次還清要出的現金（含違約金） */
   payoffCash: number
   penalty: number
-  /** 依起始日推算的剩餘本金，用來提醒填寫是否差太多；沒資料時為 null */
-  estimatedPrincipal: number | null
+  /** 實際採用的剩餘本金：有手動填就用手動的，否則用自動算的 */
+  principal: number
+  /** 依起始日、利率與調整紀錄算出的剩餘本金；資料不夠時為 null */
+  autoPrincipal: number | null
+  /** 目前適用的利率 */
+  currentRate: number
   /** 需要提醒使用者的話；沒問題為空字串 */
   note: string
 }

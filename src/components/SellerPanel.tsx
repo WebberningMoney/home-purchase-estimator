@@ -14,7 +14,7 @@ interface Props {
 /** 賣舊屋：賣價、手續費，以及房地合一稅需要的資料 */
 export function SellerPanel({ scenario, evaluation, onChange }: Props) {
   const { seller } = scenario
-  const noMortgage = !scenario.loans.some((loan) => loan.kind === 'mortgage' && loan.remainingPrincipal > 0)
+  const noMortgage = !scenario.loans.some((loan, index) => loan.kind === 'mortgage' && evaluation.loans[index].principal > 0)
   const taxMissing = seller.originalPrice === null || seller.holdingYears === null
   return (
     <Section

@@ -1,7 +1,7 @@
 export * from './types'
 export { evaluate, HORIZON_MONTHS } from './feasibility'
 export { assetValue, usableValue } from './assets'
-export { pmt, loanMonthly, monthsBetween } from './loan'
+export { pmt, amortizedBalance, monthsBetween, rateOn } from './loan'
 export { salePrice, capitalGainsTax } from './tax'
 export { describe } from './messages'
 export { findMaxAffordable, isAffordable } from './affordability'

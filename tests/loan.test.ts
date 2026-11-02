@@ -11,7 +11,8 @@ const baseLoan: Loan = {
   startDate: '2026-05-08',
   termYears: 10,
   annualRate: 0.03,
-  remainingPrincipal: 2_892_349,
+  rateChanges: [],
+  remainingPrincipal: null,
   monthlyOverride: null,
   settleOnSale: false,
   penaltyRate: 0,
@@ -48,7 +49,7 @@ describe('剩餘月數', () => {
   })
 
   it('沒有起始日就用剩餘本金與月繳金推算', () => {
-    const result = evaluateLoan({ ...baseLoan, startDate: null, monthlyOverride: 28_968 }, new Date(2026, 9, 30), false)
+    const result = evaluateLoan({ ...baseLoan, startDate: null, monthlyOverride: 28_968, remainingPrincipal: 2_892_349 }, new Date(2026, 9, 30), false)
     expect(result.remainingMonths).toBeGreaterThan(110)
     expect(result.remainingMonths).toBeLessThan(120)
   })
@@ -65,7 +66,7 @@ describe('剩餘月數', () => {
 
 describe('賣房後結清', () => {
   it('結清要出本金加違約金', () => {
-    const result = evaluateLoan({ ...baseLoan, penaltyRate: 0.01 }, new Date(2026, 9, 30), true)
+    const result = evaluateLoan({ ...baseLoan, remainingPrincipal: 2_892_349, penaltyRate: 0.01 }, new Date(2026, 9, 30), true)
     expect(result.payoffCash).toBeCloseTo(2_892_349 * 1.01, 2)
   })
 
@@ -104,5 +105,50 @@ describe('房地合一稅', () => {
 
   it('賣虧了不用繳稅', () => {
     expect(capitalGainsTax({ ...seller, originalPrice: 20_000_000 })).toBe(0)
+  })
+})
+
+describe('剩餘本金自動計算', () => {
+  const today = new Date(2026, 9, 30)
+
+  it('300 萬、3%、10 年、已繳 5 期，剩約 2,892,121', () => {
+    expect(evaluateLoan(baseLoan, today, false).principal).toBeCloseTo(2_892_120.83, 1)
+  })
+
+  it('手動填的剩餘本金優先於自動計算', () => {
+    const result = evaluateLoan({ ...baseLoan, remainingPrincipal: 2_900_000 }, today, false)
+    expect(result.principal).toBe(2_900_000)
+    expect(result.autoPrincipal).toBeCloseTo(2_892_120.83, 1)
+  })
+
+  it('利率中途調整：每次調整後用剩餘本金與期數重算', () => {
+    // 800 萬、30 年，2.1% 起，2024-03 起 2.6%，2025-09 起 2.9%；用獨立程式算出
+    const loan: Loan = {
+      ...baseLoan,
+      originalPrincipal: 8_000_000,
+      startDate: '2022-03-01',
+      termYears: 30,
+      annualRate: 0.021,
+      rateChanges: [
+        { from: '2024-03-01', annualRate: 0.026 },
+        { from: '2025-09-01', annualRate: 0.029 },
+      ],
+    }
+    const result = evaluateLoan(loan, today, false)
+    expect(result.principal).toBeCloseTo(7_123_918.95, 1)
+    expect(result.currentRate).toBe(0.029)
+    expect(result.remainingMonths).toBe(305)
+    expect(result.monthly).toBeCloseTo(33_040.17, 1)
+  })
+
+  it('還沒生效的利率調整不算', () => {
+    const loan: Loan = { ...baseLoan, rateChanges: [{ from: '2027-01-01', annualRate: 0.05 }] }
+    expect(evaluateLoan(loan, today, false).currentRate).toBe(0.03)
+  })
+
+  it('資料不夠就算不出來，提醒補資料', () => {
+    const result = evaluateLoan({ ...baseLoan, startDate: null }, today, false)
+    expect(result.autoPrincipal).toBeNull()
+    expect(result.note).toContain('補上')
   })
 })
