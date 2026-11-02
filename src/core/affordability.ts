@@ -13,6 +13,8 @@ export interface MaxAffordable {
   price: number
   /** 再貴一點，是哪個條件先破功 */
   limitedBy: PriceLimit
+  /** 再多守住「每年存下目標金額」時的最高房價；做不到時是 0 */
+  savingsGoalPrice: number
 }
 
 /**
@@ -32,19 +34,34 @@ function evaluateAt(scenario: Scenario, price: number, today: Date): Evaluation 
   return evaluate(draft, today)
 }
 
-/** 房價越高越難，所以用二分法找出「還買得起」的最高房價 */
-export function findMaxAffordable(scenario: Scenario, today: Date = new Date()): MaxAffordable {
-  if (!isAffordable(evaluateAt(scenario, 0, today))) return { price: 0, limitedBy: '買房現金' }
-  if (isAffordable(evaluateAt(scenario, PRICE_CEILING, today))) return { price: PRICE_CEILING, limitedBy: '沒有上限' }
+/** 買完房後，每年還存得下「想存的金額」，而且現金夠（不必動用存款） */
+export function meetsSavingsGoal(evaluation: Evaluation): boolean {
+  return evaluation.cashCheck === '通過' && evaluation.annualCheck === '通過'
+}
+
+type Passes = (evaluation: Evaluation) => boolean
+
+/** 房價越高越難，所以用二分法找出「還過得了關」的最高房價。0 元都過不了回傳 null */
+function highestPassingPrice(scenario: Scenario, today: Date, passes: Passes): number | null {
+  if (!passes(evaluateAt(scenario, 0, today))) return null
+  if (passes(evaluateAt(scenario, PRICE_CEILING, today))) return PRICE_CEILING
 
   let low = 0
   let high = PRICE_CEILING
   while (high - low > PRICE_STEP) {
     const middle = Math.floor((low + high) / 2 / PRICE_STEP) * PRICE_STEP
-    if (isAffordable(evaluateAt(scenario, middle, today))) low = middle
+    if (passes(evaluateAt(scenario, middle, today))) low = middle
     else high = middle
   }
+  return low
+}
 
-  const blocked = evaluateAt(scenario, high, today)
-  return { price: low, limitedBy: blocked.cashCheck === '不足' ? '買房現金' : '存款續航' }
+export function findMaxAffordable(scenario: Scenario, today: Date = new Date()): MaxAffordable {
+  const savingsGoalPrice = highestPassingPrice(scenario, today, meetsSavingsGoal) ?? 0
+  const price = highestPassingPrice(scenario, today, isAffordable)
+  if (price === null) return { price: 0, limitedBy: '買房現金', savingsGoalPrice }
+  if (price === PRICE_CEILING) return { price, limitedBy: '沒有上限', savingsGoalPrice }
+
+  const blocked = evaluateAt(scenario, price + PRICE_STEP, today)
+  return { price, limitedBy: blocked.cashCheck === '不足' ? '買房現金' : '存款續航', savingsGoalPrice }
 }

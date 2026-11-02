@@ -37,6 +37,15 @@ export function KeyFigures({ scenario, evaluation: e }: Props) {
       bad: e.budgetSlack < 0,
     },
     {
+      label: '每年實際存得下',
+      value: `${e.annualNetCashflow < 0 ? '−' : ''}${fmtBig(Math.abs(e.annualNetCashflow))}`,
+      note:
+        e.annualNetCashflow >= household.yearlySavings
+          ? `達到每年想存的 ${fmtBig(household.yearlySavings)}`
+          : `目標 ${fmtBig(household.yearlySavings)}，還差 ${fmtBig(household.yearlySavings - e.annualNetCashflow)}`,
+      bad: e.annualNetCashflow < household.yearlySavings,
+    },
+    {
       label: '存款能撐多久',
       value: runwayValue,
       note: e.runway.burnsCash

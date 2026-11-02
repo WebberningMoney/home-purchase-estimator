@@ -19,6 +19,8 @@ export function Capacity({ scenario, evaluation: e, max }: Props) {
   const scaleMax = Math.max(buyer.price, unlimited ? buyer.price : max.price) * 1.12 || 1
   const wantAt = Math.min(100, (buyer.price / scaleMax) * 100)
   const limitAt = Math.min(100, (max.price / scaleMax) * 100)
+  const goalAt = Math.min(100, (max.savingsGoalPrice / scaleMax) * 100)
+  const savedPerYear = e.annualNetCashflow
 
   const reserveGap = e.cashAfterReserve
   const runwayOk = e.runway.rating === '低風險' || e.runway.rating === '不耗用現金'
@@ -43,6 +45,16 @@ export function Capacity({ scenario, evaluation: e, max }: Props) {
       mark: runwayOk ? 'ok' : 'no',
       text: `補貼的現金要撐得過 ${household.safeMonths} 個月（低風險門檻）`,
       note: runwayText,
+    },
+    {
+      mark: e.annualCheck === '通過' ? 'ok' : 'no',
+      text: `（另外算）每年存下 ${fmtBig(household.yearlySavings)} 的目標`,
+      note:
+        savedPerYear >= household.yearlySavings
+          ? `每年約存得下 ${fmtBig(savedPerYear)}`
+          : savedPerYear >= 0
+            ? `每年只存得下 ${fmtBig(savedPerYear)}，差 ${fmtBig(household.yearlySavings - savedPerYear)}`
+            : `每年反而要動用存款 ${fmtBig(-savedPerYear)}`,
     },
   ]
 
@@ -75,14 +87,24 @@ export function Capacity({ scenario, evaluation: e, max }: Props) {
             </p>
           )}
           {!unlimited && <p className="hint">再貴就會先卡在「{max.limitedBy}」</p>}
+          <p className="goal-line">
+            要同時每年存下 {fmtBig(household.yearlySavings)}：
+            <b>{max.savingsGoalPrice > 0 ? `最多 ${fmtBig(max.savingsGoalPrice)}` : '照目前條件做不到'}</b>
+          </p>
           {max.price > 0 && !unlimited && (
             <div className="gauge" aria-hidden="true">
               <div className="gauge-track">
                 <span className="gauge-fill" style={{ width: `${limitAt}%` }} />
+                <span className="gauge-goal" style={{ width: `${goalAt}%` }} />
                 <span className={`gauge-want ${gap >= 0 ? '' : 'over'}`} style={{ left: `${wantAt}%` }} />
               </div>
               <div className="gauge-labels">
-                <span>0</span>
+                <span>
+                  <i className="dot good" />
+                  存得到目標
+                  <i className="dot steady" />
+                  要動用存款
+                </span>
                 <span>▲ 想買 {fmtBig(buyer.price)}</span>
               </div>
             </div>
@@ -99,7 +121,7 @@ export function Capacity({ scenario, evaluation: e, max }: Props) {
           ))}
         </ul>
       </div>
-      <p className="hint">上限＝同時守住三件事的最高房價，不要求達成每年存款目標。✓ ✗ 是你目前想買的房價的結果。</p>
+      <p className="hint">上限＝同時守住前三件事的最高房價；每年存款目標另外算，沒達標只代表要動用存款，不代表買不起。✓ ✗ 是你目前想買的房價的結果。</p>
 
       <dl className="snapshot">
         {snapshot.map(([label, value]) => (
