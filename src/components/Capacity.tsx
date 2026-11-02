@@ -64,39 +64,42 @@ export function Capacity({ scenario, evaluation: e, max }: Props) {
         </span>
       </header>
 
-      <div className="capacity-main">
-        <b className="capacity-price">{max.price <= 0 ? '買不起任何房' : unlimited ? '10 億以上' : fmtBig(max.price)}</b>
-        {max.price > 0 && !unlimited && (
-          <p className={gap >= 0 ? 'pos' : 'neg'}>
-            {gap >= 0 ? `你想買的 ${fmtBig(buyer.price)} 在範圍內，還有 ${fmtBig(gap)} 的空間` : `你想買的 ${fmtBig(buyer.price)} 超出 ${fmtBig(-gap)}`}
-          </p>
-        )}
-        {max.limitedBy !== '沒有上限' && <p className="hint">再貴就會先卡在「{max.limitedBy}」</p>}
-      </div>
-
-      {max.price > 0 && !unlimited && (
-        <div className="gauge" aria-hidden="true">
-          <div className="gauge-track">
-            <span className="gauge-fill" style={{ width: `${limitAt}%` }} />
-            <span className={`gauge-want ${gap >= 0 ? '' : 'over'}`} style={{ left: `${wantAt}%` }} />
-          </div>
-          <div className="gauge-labels">
-            <span>0</span>
-            <span>▲ 想買 {fmtBig(buyer.price)}</span>
-          </div>
+      <div className="capacity-body">
+        <div className="capacity-main">
+          <b className="capacity-price">{max.price <= 0 ? '買不起任何房' : unlimited ? '10 億以上' : fmtBig(max.price)}</b>
+          {max.price > 0 && !unlimited && (
+            <p className={gap >= 0 ? 'pos' : 'neg'}>
+              {gap >= 0
+                ? `想買的 ${fmtBig(buyer.price)} 在範圍內，還有 ${fmtBig(gap)} 的空間`
+                : `想買的 ${fmtBig(buyer.price)} 超出 ${fmtBig(-gap)}`}
+            </p>
+          )}
+          {!unlimited && <p className="hint">再貴就會先卡在「{max.limitedBy}」</p>}
+          {max.price > 0 && !unlimited && (
+            <div className="gauge" aria-hidden="true">
+              <div className="gauge-track">
+                <span className="gauge-fill" style={{ width: `${limitAt}%` }} />
+                <span className={`gauge-want ${gap >= 0 ? '' : 'over'}`} style={{ left: `${wantAt}%` }} />
+              </div>
+              <div className="gauge-labels">
+                <span>0</span>
+                <span>▲ 想買 {fmtBig(buyer.price)}</span>
+              </div>
+            </div>
+          )}
         </div>
-      )}
 
-      <ul className="criteria">
-        {criteria.map((item) => (
-          <li key={item.text} className={item.mark}>
-            <span className="mark">{MARK_TEXT[item.mark]}</span>
-            <span className="criteria-text">{item.text}</span>
-            <span className="criteria-note">{item.note}</span>
-          </li>
-        ))}
-      </ul>
-      <p className="hint">上限＝同時守住上面三件事的最高房價。✓ ✗ 是你目前想買的房價的結果。</p>
+        <ul className="criteria">
+          {criteria.map((item) => (
+            <li key={item.text} className={item.mark}>
+              <span className="mark">{MARK_TEXT[item.mark]}</span>
+              <span className="criteria-text">{item.text}</span>
+              <span className="criteria-note">{item.note}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <p className="hint">上限＝同時守住三件事的最高房價，不要求達成每年存款目標。✓ ✗ 是你目前想買的房價的結果。</p>
 
       <dl className="snapshot">
         {snapshot.map(([label, value]) => (

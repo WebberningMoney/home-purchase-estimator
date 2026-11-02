@@ -13,7 +13,6 @@ export type AssetKey = 'twStock' | 'twEtf' | 'usStock' | 'fund' | 'policy' | 'bt
 
 export interface Asset {
   key: AssetKey
-  name: string
   /** 美股＝美元、BTC＝顆數、其他＝新台幣 */
   amount: number
   /** 買房時要不要動用這筆 */
@@ -29,7 +28,8 @@ export interface Rates {
   btcUsd: number
 }
 
-export type LoanKind = '房貸' | '信貸'
+/** 存檔用英文代碼，畫面上的中文名稱在 src/lib/labels.ts */
+export type LoanKind = 'mortgage' | 'personal'
 
 export interface Loan {
   id: string
@@ -160,20 +160,6 @@ export interface StressTest {
   passed: boolean
 }
 
-export interface MaxPrice {
-  /** 年預算（扣掉保留貸款後） */
-  budgetForNewLoan: number
-  byCashflow: number
-  byCash: number
-  /** 現金只要撐「安全月數」的上限（有條件可行） */
-  byRunway: number
-  /** 完全可行的上限 */
-  withinBudget: number
-  gapToPrice: number
-  /** 預計房價落在哪一段 */
-  blocker: string
-}
-
 export interface Evaluation {
   assetsTotal: number
   usableAssets: number
@@ -211,6 +197,5 @@ export interface Evaluation {
   stress: StressTest
   netWorthBefore: number
   netWorthAfter: number
-  maxPrice: MaxPrice
   schedule: MonthRow[]
 }

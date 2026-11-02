@@ -70,7 +70,7 @@ export function CashChart({ scenario, evaluation: e }: Props) {
       <header className="chart-head">
         <div>
           <h2>現金推移</h2>
-          <p className="hint">買完房後，存款每個月怎麼變。線掉到 0 以下，就是存款用完、開始欠缺口。</p>
+          <p className="hint">買完房後，可動用的存款每月怎麼變。掉到 0 以下就是用完了。</p>
         </div>
         <div className="segmented" role="group" aria-label="圖表時間範圍">
           {RANGES.map((range, index) => (
@@ -87,8 +87,25 @@ export function CashChart({ scenario, evaluation: e }: Props) {
         </div>
       </header>
 
+      <dl className="chart-stats">
+        <div>
+          <dt>起點現金</dt>
+          <dd>{fmtBig(startCash)}</dd>
+        </div>
+        <div>
+          <dt>最低點</dt>
+          <dd className={e.runway.lowestCash < 0 ? 'neg' : ''}>{fmtBig(e.runway.lowestCash)}</dd>
+        </div>
+        <div>
+          <dt>存款用完</dt>
+          <dd className={e.runway.months !== null ? 'neg' : 'pos'}>
+            {e.runway.months === null ? (e.runway.burnsCash ? '撐過全程' : '不會用到') : yearText(e.runway.months)}
+          </dd>
+        </div>
+      </dl>
+
       <div className="chart-box">
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={240}>
           <ComposedChart data={data} margin={{ top: 12, right: 12, bottom: 0, left: 4 }}>
             <defs>
               <linearGradient id="gainFill" x1="0" y1="0" x2="0" y2="1">

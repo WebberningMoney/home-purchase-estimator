@@ -1,4 +1,5 @@
 import type { Evaluation, Loan, Scenario } from '../core'
+import { LOAN_KIND_LABEL } from '../lib/labels'
 import { fmtBig, fmtMoney } from '../lib/format'
 import { NumberField } from './NumberField'
 import { OptionalNumberField } from './OptionalNumberField'
@@ -15,7 +16,7 @@ let counter = 0
 const newLoan = (): Loan => ({
   id: `loan-${Date.now()}-${counter++}`,
   name: '新貸款',
-  kind: '信貸',
+  kind: 'personal',
   originalPrincipal: 0,
   startDate: null,
   termYears: 5,
@@ -54,8 +55,11 @@ export function LoansPanel({ scenario, evaluation, onChange }: Props) {
                 value={loan.kind}
                 onChange={(event) => onChange((d) => void (d.loans[index].kind = event.target.value as Loan['kind']))}
               >
-                <option value="房貸">房貸</option>
-                <option value="信貸">信貸</option>
+                {(Object.keys(LOAN_KIND_LABEL) as Loan['kind'][]).map((kind) => (
+                  <option key={kind} value={kind}>
+                    {LOAN_KIND_LABEL[kind]}
+                  </option>
+                ))}
               </select>
               <button
                 type="button"

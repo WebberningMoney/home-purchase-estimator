@@ -37,8 +37,7 @@ describe.skipIf(!existsSync(path))('跟試算表的數字對照', () => {
     near(result.runway.lowestCash, snapshot.expected.lowestCash)
   })
 
-  it('最高房價與淨資產', () => {
-    near(result.maxPrice.byRunway, snapshot.expected.byRunway)
+  it('淨資產', () => {
     near(result.netWorthBefore, snapshot.expected.netWorthBefore)
     near(result.netWorthAfter, snapshot.expected.netWorthAfter)
   })
