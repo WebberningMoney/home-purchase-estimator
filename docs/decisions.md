@@ -21,5 +21,5 @@
 - 把拉桿從最小拉到最大取 100 個點，每點整份重算一次，依結果上色。拖動時才不用猜哪裡買不起。
 
 ## 名稱
-- 中文「換屋財務評估」，英文 Home Swap Estimator（與原試算表同名）。
-- 專案資料夾與 GitHub 名稱維持 `home-swap-estimator`。
+- 中文「購屋財務評估」，英文 Home Purchase Estimator。既能評估賣舊屋再買新屋（換屋），也能評估第一次買房或加買一間。
+- 專案資料夾、GitHub 倉庫與存檔識別碼仍用 `home-swap-estimator`（早期名稱），改名不影響使用。

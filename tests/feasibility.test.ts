@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createDefaultScenario, evaluate, findMaxAffordable, isAffordable } from '../src/core'
+import { createSellingScenario } from './helpers'
 import { toneOf } from '../src/lib/zones'
 
 const today = new Date('2026-10-30')
@@ -7,12 +8,12 @@ const near = (actual: number, expected: number, tolerance = 1) => expect(Math.ab
 
 describe('範例資料的結論', () => {
   it('範例房價買得起，但要靠存款補', () => {
-    const result = evaluate(createDefaultScenario(), today)
+    const result = evaluate(createSellingScenario(), today)
     expect(result.verdict).not.toBe('不可行')
   })
 
   it('房價拉到 9,000 萬就買不起', () => {
-    const scenario = createDefaultScenario()
+    const scenario = createSellingScenario()
     scenario.buyer.price = 90_000_000
     const result = evaluate(scenario, today)
     expect(result.cashCheck).toBe('不足')
@@ -20,8 +21,8 @@ describe('範例資料的結論', () => {
   })
 
   it('利率越高，每月房貸越多', () => {
-    const low = createDefaultScenario()
-    const high = createDefaultScenario()
+    const low = createSellingScenario()
+    const high = createSellingScenario()
     high.buyer.annualRate = 0.08
     expect(evaluate(high, today).monthlyPayment).toBeGreaterThan(evaluate(low, today).monthlyPayment)
   })
@@ -29,7 +30,7 @@ describe('範例資料的結論', () => {
 
 describe('最多買得起的房價', () => {
   it('上限以內買得起，超過一點就不行', () => {
-    const scenario = createDefaultScenario()
+    const scenario = createSellingScenario()
     const { price } = findMaxAffordable(scenario, today)
     const at = (value: number) => {
       const draft = structuredClone(scenario)
@@ -42,8 +43,8 @@ describe('最多買得起的房價', () => {
   })
 
   it('不賣舊屋時，賣屋收入不計、貸款全部留著', () => {
-    const selling = createDefaultScenario()
-    const keeping = createDefaultScenario()
+    const selling = createSellingScenario()
+    const keeping = createSellingScenario()
     keeping.seller.enabled = false
     const a = evaluate(selling, today)
     const b = evaluate(keeping, today)
@@ -57,7 +58,7 @@ describe('最多買得起的房價', () => {
 // 下面的數字是另外用獨立程式（只依規格、不看本專案程式碼）重算出來的，用來防止公式悄悄跑掉
 describe('對照獨立重算（範例資料、2026-10-30）', () => {
   it('賣屋後的現金與買房後剩餘', () => {
-    const result = evaluate(createDefaultScenario(), today)
+    const result = evaluate(createSellingScenario(), today)
     near(result.assetsTotal, 12_612_000)
     near(result.usableAssets, 7_800_000)
     near(result.availableCash, 16_321_234.92, 0.01)
@@ -66,13 +67,13 @@ describe('對照獨立重算（範例資料、2026-10-30）', () => {
   })
 
   it('每月房貸與每年還款', () => {
-    const result = evaluate(createDefaultScenario(), today)
+    const result = evaluate(createSellingScenario(), today)
     near(result.monthlyPayment, 96_872.58, 0.01)
     near(result.annualPayment, 1_485_907.37, 0.01)
   })
 
   it('最多買得起：3,790 萬，上限那天存款撐 36 個月、再貴 20 萬就掉到 32 個月', () => {
-    const scenario = createDefaultScenario()
+    const scenario = createSellingScenario()
     expect(findMaxAffordable(scenario, today)).toEqual({ price: 37_900_000, limitedBy: '存款續航', savingsGoalPrice: 12_700_000 })
     const runwayAt = (price: number) => {
       const draft = structuredClone(scenario)
@@ -84,7 +85,7 @@ describe('對照獨立重算（範例資料、2026-10-30）', () => {
   })
 
   it('不賣舊屋：可用現金只剩資產，買不起', () => {
-    const scenario = createDefaultScenario()
+    const scenario = createSellingScenario()
     scenario.seller.enabled = false
     const result = evaluate(scenario, today)
     near(result.availableCash, 7_800_000)
@@ -95,7 +96,7 @@ describe('對照獨立重算（範例資料、2026-10-30）', () => {
 
 describe('每年想存的金額', () => {
   it('達標上限 1,270 萬：每年還款剛好不超過年預算，再貴 20 萬就超過', () => {
-    const scenario = createDefaultScenario()
+    const scenario = createSellingScenario()
     const at = (price: number) => {
       const draft = structuredClone(scenario)
       draft.buyer.price = price
@@ -108,14 +109,14 @@ describe('每年想存的金額', () => {
   })
 
   it('想存得越多，達標的房價上限就越低', () => {
-    const modest = createDefaultScenario()
-    const ambitious = createDefaultScenario()
+    const modest = createSellingScenario()
+    const ambitious = createSellingScenario()
     ambitious.household.yearlySavings = 600_000
     expect(findMaxAffordable(ambitious, today).savingsGoalPrice).toBeLessThan(findMaxAffordable(modest, today).savingsGoalPrice)
   })
 
   it('達標的房價，一定也「買得起」', () => {
-    const scenario = createDefaultScenario()
+    const scenario = createSellingScenario()
     const { price, savingsGoalPrice } = findMaxAffordable(scenario, today)
     expect(savingsGoalPrice).toBeLessThanOrEqual(price)
   })
@@ -123,7 +124,7 @@ describe('每年想存的金額', () => {
 
 describe('一致性：同一套標準', () => {
   it('拉桿綠藍區 ⇔ 房價在「最多買得起」以內', () => {
-    const scenario = createDefaultScenario()
+    const scenario = createSellingScenario()
     const { price: limit } = findMaxAffordable(scenario, today)
     for (let price = 5_000_000; price <= 100_000_000; price += 700_000) {
       const draft = structuredClone(scenario)
@@ -141,7 +142,7 @@ describe('一致性：同一套標準', () => {
       { rate: 0.1, ltv: 0.3, reserve: 6 },
     ]
     for (const c of cases) {
-      const scenario = createDefaultScenario()
+      const scenario = createSellingScenario()
       scenario.buyer.annualRate = c.rate
       scenario.buyer.ltv = c.ltv
       scenario.household.reserveMonths = c.reserve
@@ -159,7 +160,7 @@ describe('一致性：同一套標準', () => {
 
 describe('賣屋時的貸款', () => {
   it('舊屋房貸一定還清，就算開關沒開', () => {
-    const scenario = createDefaultScenario()
+    const scenario = createSellingScenario()
     scenario.loans[0].settleOnSale = false
     const result = evaluate(scenario, today)
     expect(result.loans[0].settled).toBe(true)
@@ -167,7 +168,7 @@ describe('賣屋時的貸款', () => {
   })
 
   it('信貸看使用者選擇：不選就留著繼續繳', () => {
-    const scenario = createDefaultScenario()
+    const scenario = createSellingScenario()
     const result = evaluate(scenario, today)
     expect(result.loans[1].settled).toBe(false)
     scenario.loans[1].settleOnSale = true
@@ -175,8 +176,43 @@ describe('賣屋時的貸款', () => {
   })
 
   it('賣屋實拿現金＝賣價 − 手續費 − 稅費 − 還清的貸款', () => {
-    const result = evaluate(createDefaultScenario(), today)
+    const result = evaluate(createSellingScenario(), today)
     near(result.saleNetCash, 16_250_000 - 650_000 - 7_078_765.08, 0.01)
     near(result.availableCash, result.usableAssets + result.saleNetCash)
+  })
+})
+
+// 預設範例（買新屋、沒有舊屋）的獨立重算對照
+describe('預設範例：買新屋', () => {
+  const scenario = createDefaultScenario()
+  const result = evaluate(scenario, today)
+
+  it('資產合計 500 萬，其中 474.4 萬買房時動用', () => {
+    near(result.assetsTotal, 5_000_000)
+    near(result.usableAssets, 4_744_000)
+    near(result.availableCash, 4_744_000)
+  })
+
+  it('2,000 萬、貸 8 成、2.5%、30 年：每月約 63,219，現金勉強夠但存款只撐 9 個月', () => {
+    near(result.monthlyPayment, 63_219.34, 0.01)
+    near(result.annualPayment, 917_191.73, 0.01)
+    near(result.remainingCash, 344_000)
+    near(result.cashAfterReserve, 125_000)
+    expect(result.runway.months).toBe(9)
+    expect(result.verdict).toBe('不可行')
+  })
+
+  it('最多買得起 1,890 萬；要同時存下每年目標則是 1,060 萬', () => {
+    expect(findMaxAffordable(scenario, today)).toEqual({
+      price: 18_900_000,
+      limitedBy: '存款續航',
+      savingsGoalPrice: 10_600_000,
+    })
+  })
+
+  it('不賣舊屋，也沒有舊屋房貸要還', () => {
+    expect(result.salePrice).toBe(0)
+    expect(result.payoffTotal).toBe(0)
+    near(result.debtTotal, 1_000_000)
   })
 })
