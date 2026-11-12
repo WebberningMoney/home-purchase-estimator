@@ -1,0 +1,17 @@
+#!/bin/sh
+# commit 前檢查（啟用：git config core.hooksPath scripts/git-hooks）
+#  ① 作者、提交者不可以是 AI 助理的預設身分，設了擁有者信箱時必須是擁有者
+#  ② 不可以開著自動簽章：沙盒的金鑰沒登記在擁有者的 GitHub，會被標成 Unverified
+owner="$(git config estimator.owneremail || true)"
+for v in GIT_AUTHOR_IDENT GIT_COMMITTER_IDENT; do
+  id="$(git var $v)"
+  case "$id" in *"<noreply@anthropic.com>"*)
+    echo "❌ $v 是 AI 助理的預設身分（$id），請先把 git user.name / user.email 設成專案擁有者。" >&2; exit 1 ;;
+  esac
+  if [ -n "$owner" ]; then
+    case "$id" in *"<$owner>"*) ;; *) echo "❌ $v 不是專案擁有者 <$owner>（目前：$id）。" >&2; exit 1 ;; esac
+  fi
+done
+if [ "$(git config --bool commit.gpgsign || echo false)" = "true" ]; then
+  echo "❌ 開著自動簽章，commit 會在 GitHub 顯示 Unverified。請執行：git config commit.gpgsign false" >&2; exit 1
+fi
